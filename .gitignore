@@ -1,0 +1,9 @@
+# Unecessary files and folder
+M5GFX/
+M5Unit-CatM/
+PubSubClient/
+TinyGSM/
+**/Resource/*.pdf
+
+# Extra programming stuff
+.vscode
