@@ -101,7 +101,7 @@ bool DFRobot_SIM7000::setNetMode(eNet net)
     _mode_t=0;
   	if(checkSendCmd("AT+CNMP=38\r\n","OK")){
       delay(300);
-      if(checkSendCmd("AT+CMNB=3\r\n","OK")){ //by�o 2
+      if(checkSendCmd("AT+CMNB=3\r\n","OK")){ // 2 for NB-only, 3 for both
         return true;
       }else{
         return false;
@@ -138,20 +138,19 @@ bool DFRobot_SIM7000::attacthService(void)
    Serial.println("\r\n");  
 
 
-  /*
-  cleanBuffer(gprsBuffer,32);
-  sendCmd("AT+CGATT=1\r\n");
-  while(1){
-    readBuffer(gprsBuffer, 320);
-    if(NULL != strstr(gprsBuffer, "OK")){
-      delay(100);
-      break;
-    }
-    if(NULL != strstr(gprsBuffer, "ERROR")){
-      return false;
-    }
-  } 
-  */
+  
+  // cleanBuffer(gprsBuffer,32);
+  // sendCmd("AT+CGATT=1\r\n");
+  // while(1){
+  //   readBuffer(gprsBuffer, 320);
+  //   if(NULL != strstr(gprsBuffer, "OK")){
+  //     delay(100);
+  //     break;
+  //   }
+  //   if(NULL != strstr(gprsBuffer, "ERROR")){
+  //     return false;
+  //   }
+  // } 
   
   /*
    sendCmd("AT+CNMP=38\r\n");
@@ -172,13 +171,16 @@ bool DFRobot_SIM7000::attacthService(void)
   } 
   */
   
+   // define PDP context
    sendCmd("AT+CGDCONT=1,\"IP\",\"plus\"\r\n");
    cleanBuffer(Buffer,200); //by�o 32
    delay(500);
    readBuffer(Buffer, 200); //by�o 32
    Serial.println(Buffer);
    Serial.println("\r\n");  
-  /*
+  
+  
+   /*
   while(1){
     readBuffer(gprsBuffer, 32); //by�o 32
     if(NULL != strstr(gprsBuffer, "OK")){
@@ -202,6 +204,7 @@ bool DFRobot_SIM7000::attacthService(void)
   }
   */
 
+  // PDP configure
    sendCmd("AT+CNCFG=0,1,\"plus\"\r\n");
    cleanBuffer(Buffer,200); //by�o 32
    delay(500);
@@ -222,7 +225,7 @@ bool DFRobot_SIM7000::attacthService(void)
    Serial.println(Buffer);
    Serial.println("\r\n");  
   
-   // some info debug info, not needed now
+  // // PDP INFO
   //     sendCmd("AT+CGREG?\r\n");
   //  cleanBuffer(Buffer,200); //by�o 32
   //  delay(500);
@@ -237,12 +240,13 @@ bool DFRobot_SIM7000::attacthService(void)
   //  Serial.println(Buffer);
   //  Serial.println("\r\n");  
   
-     sendCmd("AT+CGATT?\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");  
+  //    sendCmd("AT+CGATT?\r\n");
+  //  cleanBuffer(Buffer,200); //by�o 32
+  //  delay(500);
+  //  readBuffer(Buffer, 200); //by�o 32
+  //  Serial.println(Buffer);
+  //  Serial.println("\r\n");  
+
    
     sendCmd("AT+SNPDPID=0\r\n");
    cleanBuffer(Buffer,200); //by�o 32
@@ -258,20 +262,19 @@ bool DFRobot_SIM7000::attacthService(void)
    Serial.println(Buffer);
    Serial.println("\r\n");   
 
-/*
-    sendCmd("AT+SNPING4=\"www.google.com\",5,1,20000\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(5000);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");   
-      delay(5000);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");  
-   delay(5000);
+  // // PING GOOGLE
+  //   sendCmd("AT+SNPING4=\"www.google.com\",5,1,20000\r\n");
+  //  cleanBuffer(Buffer,200); //by�o 32
+  //  delay(5000);
+  //  readBuffer(Buffer, 200); //by�o 32
+  //  Serial.println(Buffer);
+  //  Serial.println("\r\n");   
+  //     delay(5000);
+  //  readBuffer(Buffer, 200); //by�o 32
+  //  Serial.println(Buffer);
+  //  Serial.println("\r\n");  
+  //  delay(5000);
 
-  */
   
   //ustalenie czasu 
    sendCmd("AT+CNTPCID=0\r\n");
@@ -359,15 +362,7 @@ bool DFRobot_SIM7000::attacthService(void)
     Serial.println("\r\n");
 
 
-    // http info
-  //   sendCmd("AT+SHCONF=?\r\n");
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println("shconf info 1\r\n");
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n"); 
-   
+    // http info   
   //  sendCmd("AT+SHCONF?\r\n");
   //  cleanBuffer(Buffer,200); //by�o 32
   //  delay(500);
@@ -382,7 +377,6 @@ bool DFRobot_SIM7000::attacthService(void)
    cleanBuffer(Buffer,200); //by�o 32
    delay(500);
    readBuffer(Buffer, 200); //by�o 32
-   Serial.println("shconf conn\r\n");
    Serial.println(Buffer);
    Serial.println("\r\n");
 
@@ -390,7 +384,6 @@ bool DFRobot_SIM7000::attacthService(void)
   //  set body for POST
    sendCmd("AT+SHBOD=11,2000\r\n");
    delay(200);
-// sendString("czajniczek2");
    sendString("czujnik-ssl");
    Serial.println("\r\n");
    cleanBuffer(Buffer,200); //by�o 32
@@ -419,234 +412,8 @@ bool DFRobot_SIM7000::attacthService(void)
    Serial.println("\r\n");
    sendCmd("AT+SHCONN\r\n");
 
-   // http conn
-  //  sendCmd("AT+SHCONN\r\n");
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println("shconf conn\r\n");
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");
-
-  //  sendCmd("AT+SHCONN\r\n");
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println("shconf conn\r\n");
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");
-
-
    while (1) {}
-  
-   
 
-
-  // TCP - STARTE 
-   // zmieniłem port na 80 -> HTTP bez S
-  //  sendCmd("AT+CAOPEN=0,0,\"TCP\",\"172.205.129.224\",80\r\n");//sendCmd("AT+CAOPEN=0,0,\"TCP\",\"172.205.129.224\",443\r\n");//sendCmd("AT+CAOPEN=0,0,\"UDP\",\"172.205.129.224\",15683\r\n");
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n"); 
-
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");   
-   
-  //    sendCmd("AT+CASTATE?\r\n");
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");  
-   
-  //     cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");  
-   
-  // MICHAŁOWE GET, POST, SEND
-  //  sendCmd("AT+CASEND=0,26\r\n");
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");  
-   
-  //  sendCmd(">GET 172.205.129.224 123456\r\n");
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println("b1\r\n");
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");  
-   
-  //     cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println("b2\r\n");
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");  
-   
-  //     cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println("b3\r\n");
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");  
-   
-  //     sendCmd("AT+CASEND=0,96\r\n");
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println("bb1\r\n");
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");  
-   
-  //  sendCmd(">https://172.205.129.224 -k -X POST -H \"Content-Type: application/octet-stream\" -d \"ciekawe\"\r\n");
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println("bb2\r\n");
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");  
-   
-  //     cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println("bb3\r\n");
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");  
-   
-  //     cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");  
-  
-  // CLOSE CONNECTION
-  //     sendCmd("AT+CACLOSE=0\r\n");
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");  
-   
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");  
-   
-   
-   
-   /*
-   sendCmd("AT+SHCONF=\"URL\",\"https://172.205.129.224/\"\r\n");//sendCmd("AT+SHCONF=\"URL\",\"http://www.google.com\"\r\n"); //172.205.129.224\"\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");  
-   
-   sendCmd("AT+SHCONF=\"TIMEOUT\",30\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");  
-   
-   sendCmd("AT+SHCONF=\"BODYLEN\",1\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");  
-   
-   sendCmd("AT+SHCONF=\"HEADERLEN\",1\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");  
-   
-   sendCmd("AT+SHCONF=\"POLLCNT\",15\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n"); 
-   
-   sendCmd("AT+SHCONF=\"POLLINTMS\",1000\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n"); 
-   
-   sendCmd("AT+SHCONF=\"IPVER\",0\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n"); 
-
-   sendCmd("AT+SHCONF?\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");    
-
-   sendCmd("AT+SHSSL?\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");  
-
-   sendCmd("AT+SHSSL?\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");  
-
-   sendCmd("AT+SHCONN\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");  
-   
-   sendCmd("AT+SHBOD=\"X\",1\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n"); 
-   
-   sendCmd("AT+SHAHEAD=\"Y\",1\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n"); 
-   
-   sendCmd("AT+SHDISC\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n"); 
-   */
-  //  while(1){}
-   
   return true;
 }
 
