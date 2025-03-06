@@ -225,27 +225,27 @@ bool DFRobot_SIM7000::attacthService(void)
    Serial.println(Buffer);
    Serial.println("\r\n");  
   
-  // // PDP INFO
-  //     sendCmd("AT+CGREG?\r\n");
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");  
+  // PDP INFO
+      sendCmd("AT+CGREG?\r\n");
+   cleanBuffer(Buffer,200); //by�o 32
+   delay(210);
+   readBuffer(Buffer, 200); //by�o 32
+   Serial.println(Buffer);
+   Serial.println("\r\n");  
 
-  //     sendCmd("AT+CGDCONT?\r\n");
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");  
+      sendCmd("AT+CGDCONT?\r\n");
+   cleanBuffer(Buffer,200); //by�o 32
+   delay(210);
+   readBuffer(Buffer, 200); //by�o 32
+   Serial.println(Buffer);
+   Serial.println("\r\n");  
   
-  //    sendCmd("AT+CGATT?\r\n");
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(500);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");  
+     sendCmd("AT+CGATT?\r\n");
+   cleanBuffer(Buffer,200); //by�o 32
+   delay(210);
+   readBuffer(Buffer, 200); //by�o 32
+   Serial.println(Buffer);
+   Serial.println("\r\n");  
 
    
     sendCmd("AT+SNPDPID=0\r\n");
@@ -389,7 +389,6 @@ bool DFRobot_SIM7000::attacthService(void)
    cleanBuffer(Buffer,200); //by�o 32
    delay(500);
    readBuffer(Buffer, 200); //by�o 32
-   Serial.println("shbod set body\r\n");
    Serial.println(Buffer);
    Serial.println("\r\n");
 
@@ -398,7 +397,6 @@ bool DFRobot_SIM7000::attacthService(void)
    cleanBuffer(Buffer,200); //by�o 32
    delay(500);
    readBuffer(Buffer, 200); //by�o 32
-   Serial.println("shconf check body\r\n");
    Serial.println(Buffer);
    Serial.println("\r\n");
 
@@ -410,7 +408,23 @@ bool DFRobot_SIM7000::attacthService(void)
    Serial.println("shconf set req to POST\r\n");
    Serial.println(Buffer);
    Serial.println("\r\n");
+
+   
+   cleanBuffer(Buffer,200); //by�o 32
+   sendCmd("AT+SHREAD=0,1000\r\n");
+   delay(500);
+   readBuffer(Buffer, 200); //by�o 32
+   Serial.println("shconn\r\n");
+   Serial.println(Buffer);
+   Serial.println("\r\n");
+
+   cleanBuffer(Buffer,200); //by�o 32
    sendCmd("AT+SHCONN\r\n");
+   delay(500);
+   readBuffer(Buffer, 200); //by�o 32
+   Serial.println("shconn\r\n");
+   Serial.println(Buffer);
+   Serial.println("\r\n");
 
    while (1) {}
 
