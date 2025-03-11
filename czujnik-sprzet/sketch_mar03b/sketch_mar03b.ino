@@ -30,6 +30,8 @@
 //This URL is use for get data from tlink, please change the SENSORID to your sensorsId
 #define GETURL    "172.205.129.224"
 
+#define HOST      "https://172.205.129/224"
+
 SoftwareSerial     mySerial(PIN_RX,PIN_TX);
 DFRobot_SIM7000         sim7000(&mySerial);
   
@@ -82,11 +84,33 @@ void setup(){
 
   Serial.println("Attaching service......");
   while(1){
-    if(sim7000.attacthService()){                        //Open the connection
+    if(sim7000.attacthService()){
       Serial.println("Attach service");
       break;
     }else{
       Serial.println("Fail to Attach service");
+      delay(1100);
+    }
+  }
+
+    Serial.println("Init http.....");
+  while(1){
+    if(sim7000.myHttpInit(HOST)){
+      Serial.println("Success: init http");
+      break;
+    }else{
+      Serial.println("Fail: init http");
+      delay(1100);
+    }
+  }
+
+      Serial.println("Send POST request.....");
+  while(1){
+    if(sim7000.myPostRequest(HOST, "hello")){
+      Serial.println("Success: send POST");
+      break;
+    }else{
+      Serial.println("Fail: send POST");
       delay(1100);
     }
   }

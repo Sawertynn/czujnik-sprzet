@@ -1,4 +1,5 @@
 #include <DFRobot_SIM7000.h>
+#include <stdio.h>
 
 constexpr int BUFSIZE = 200;
 constexpr int TRY_COUNT = 3;
@@ -196,48 +197,52 @@ bool DFRobot_SIM7000::attacthService(void)
    mySendCmd("AT+CASSLCFG=0,\"CRINDEX\",0\r\n");
   
    mySendCmd("AT+CASSLCFG?\r\n");
+
+   while (true) {}
+
+   return true;
  
    
 
    
-    // http conf
-    mySendCmd("AT+SHCONF=\"URL\",\"https://172.205.129.224\"\r\n");
+    // // http conf
+    // mySendCmd("AT+SHCONF=\"URL\",\"https://172.205.129.224\"\r\n");
 
-    mySendCmd("AT+SHCONF=\"BODYLEN\", 1024\r\n");
-    mySendCmd("AT+SHCONF=\"HEADERLEN\", 256\r\n");
-    mySendCmd("AT+SHCONN\r\n");
+    // mySendCmd("AT+SHCONF=\"BODYLEN\", 1024\r\n");
+    // mySendCmd("AT+SHCONF=\"HEADERLEN\", 256\r\n");
+    // mySendCmd("AT+SHCONN\r\n");
 
 
-  //  set body for POST
-  delay(2000);
-  cleanBuffer(Buffer,200); //by�o 32
-  sendCmd("AT+SHBOD=11,3000\r\n");
-  delay(200);
-  sendString("porzadki-56");
-  delay(200);
-  Serial.println("\r\n");
-  delay(200);
-  readBuffer(Buffer, 200); //by�o 32
-  Serial.println(Buffer);
-  Serial.println("\r\n");
+  // //  set body for POST
+  // delay(2000);
+  // cleanBuffer(Buffer,200); //by�o 32
+  // sendCmd("AT+SHBOD=11,3000\r\n");
+  // delay(200);
+  // sendString("porzadki-56");
+  // delay(200);
+  // Serial.println("\r\n");
+  // delay(200);
+  // readBuffer(Buffer, 200); //by�o 32
+  // Serial.println(Buffer);
+  // Serial.println("\r\n");
 
    
-  sendCmd("AT+SHBOD?\r\n");
-  cleanBuffer(Buffer,200); //by�o 32
-  delay(500);
-  readBuffer(Buffer, 200); //by�o 32
-  Serial.println(Buffer);
-  Serial.println("\r\n");
+  // sendCmd("AT+SHBOD?\r\n");
+  // cleanBuffer(Buffer,200); //by�o 32
+  // delay(500);
+  // readBuffer(Buffer, 200); //by�o 32
+  // Serial.println(Buffer);
+  // Serial.println("\r\n");
 
-  //  make request (POST)
-   mySendCmd("AT+SHREQ=\"/\", 3\r\n");
+  // //  make request (POST)
+  //  mySendCmd("AT+SHREQ=\"/\", 3\r\n");
 
 
-   mySendCmd("AT+SHSTATE\r\n");
-   mySendCmd("AT+SHREAD=0,100\r\n");
-   mySendCmd("AT+SHCONN\r\n");
+  //  mySendCmd("AT+SHSTATE\r\n");
+  //  mySendCmd("AT+SHREAD=0,100\r\n");
+  //  mySendCmd("AT+SHCONN\r\n");
 
-   while (1) {}
+  //  while (1) {}
 
   return true;
 }
@@ -692,7 +697,59 @@ int DFRobot_SIM7000::batteryPower(void)
   return  k;
 }
 
-bool DFRobot_SIM7000::mySendCmd(char* cmd, int delay_ms = BASE_DELAY, int try_count = 3)
+// Additional functions
+
+bool DFRobot_SIM7000::myHttpInit(char *host)
+{
+  char buffer[BUFSIZE];
+  char command[BUFSIZE];
+
+  cleanBuffer(buffer, BUFSIZE);
+  cleanBuffer(command, BUFSIZE);
+
+  snprintf(command, BUFSIZE, "AT+SHCONF=\"URL\",\"%s\"\r\n", host);
+  mySendCmd(command);
+  
+  mySendCmd("AT+SHCONF=\"BODYLEN\", 1024\r\n");
+  mySendCmd("AT+SHCONF=\"HEADERLEN\", 256\r\n");
+  // mySendCmd("AT+SHCONN\r\n");
+  return true;
+}
+
+bool DFRobot_SIM7000::myPostRequest(char *host, char *data)
+{
+  char buffer[BUFSIZE];
+  char command[BUFSIZE];
+
+  // snprintf(command, BUFSIZE, "AT+SHCONF=\"URL\",\"%s\"\r\n", host);
+  //  set body for POST
+  delay(2000);
+  cleanBuffer(buffer,BUFSIZE); //by�o 32
+  sendCmd("AT+SHBOD=11,3000\r\n");
+  delay(200);
+  sendString("porzadki-56");
+  delay(200);
+  Serial.println("\r\n");
+  delay(200);
+  readBuffer(buffer, BUFSIZE); //by�o 32
+  Serial.println(buffer);
+  Serial.println("\r\n");
+
+   
+  sendCmd("AT+SHBOD?\r\n");
+  cleanBuffer(buffer,BUFSIZE); //by�o 32
+  delay(500);
+  readBuffer(buffer, 200); //by�o 32
+  Serial.println(buffer);
+  Serial.println("\r\n");
+
+  //  make request (POST)
+   mySendCmd("AT+SHREQ=\"/\", 3\r\n");
+
+  return true;
+}
+
+bool DFRobot_SIM7000::mySendCmd(char *cmd, int delay_ms = BASE_DELAY, int try_count = 3)
 {
   char Buffer[BUFSIZE];
   

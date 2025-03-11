@@ -320,6 +320,10 @@ public:
    */
   const char* getLongitude(void);
 
+public:
+  bool myHttpInit(char *host);
+  bool myPostRequest(char* host, char* data);
+
 private:
   bool mySendCmd(char* cmd, int base_delay = BASE_DELAY, int tryCount = 3);
   
