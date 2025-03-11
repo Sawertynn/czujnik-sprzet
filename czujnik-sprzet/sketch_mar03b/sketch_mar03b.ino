@@ -75,7 +75,7 @@ void setup(){
 
   Serial.println("Get signal quality......");
   delay(1500);
-  signalStrength=sim7000.checkSignalQuality();             //Check signal quality from (0-30)
+  signalStrength=sim7000.checkSignalQuality();             //C  heck signal quality from (0-30)
   Serial.print("signalStrength =");
   Serial.println(signalStrength);
   delay(500);

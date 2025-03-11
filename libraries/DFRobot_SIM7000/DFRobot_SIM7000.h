@@ -20,6 +20,8 @@
 #define ON  0
 #define OFF 1
 
+constexpr int BASE_DELAY = 100;
+
 
 #if 0
 #define DBG(...) {Serial.print("["); Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
@@ -317,6 +319,9 @@ public:
    * @return Longitude value
    */
   const char* getLongitude(void);
+
+private:
+  bool mySendCmd(char* cmd, int base_delay = BASE_DELAY, int tryCount = 3);
   
 private:
   char  _latitude[8];
