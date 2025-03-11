@@ -1,5 +1,9 @@
 #include <DFRobot_SIM7000.h>
 
+constexpr int BUFSIZE = 200;
+constexpr int TRY_COUNT = 3;
+constexpr int BASE_DELAY = 100;
+
 DFRobot_SIM7000::DFRobot_SIM7000(Stream *s):DFRobot_SIMcore(s)
 {
 	_s = s;
@@ -128,124 +132,72 @@ bool DFRobot_SIM7000::setNetMode(eNet net)
 bool DFRobot_SIM7000::attacthService(void)
 {
   char gprsBuffer[32];
-  char Buffer[200];
+  char Buffer[BUFSIZE];
   
-         sendCmd("AT+CGATT=1\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(2500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");  
-
-
-  
-  // cleanBuffer(gprsBuffer,32);
-  // sendCmd("AT+CGATT=1\r\n");
-  // while(1){
-  //   readBuffer(gprsBuffer, 320);
-  //   if(NULL != strstr(gprsBuffer, "OK")){
-  //     delay(100);
-  //     break;
-  //   }
-  //   if(NULL != strstr(gprsBuffer, "ERROR")){
-  //     return false;
-  //   }
-  // } 
-  
-  /*
-   sendCmd("AT+CNMP=38\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");
-   
-  */
-  //if(checkSendCmd("AT+CIPSHUT\r\n","OK",2000)) //dodane
- /* 
-  cleanBuffer(gprsBuffer,32); //by�o 32
-  if(_mode_t){
-    sendCmd("AT+CSTT=\"plus\"\r\n");//sendCmd("AT+CSTT=\"plus\",\"\",\"\"\r\n");//sendCmd("AT+CSTT=\"plus\"\r\n"); //by�o cmnet
-  }else{
-    sendCmd("AT+CSTT=\"plus\"\r\n");//sendCmd("AT+CSTT=\"plus\",\"\",\"\"\r\n");//sendCmd("AT+CSTT=\"plus\"\r\n");   //by�o cntb
-  } 
-  */
-  
-   // define PDP context
-   sendCmd("AT+CGDCONT=1,\"IP\",\"plus\"\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");  
-  
-  
-   /*
-  while(1){
-    readBuffer(gprsBuffer, 32); //by�o 32
-    if(NULL != strstr(gprsBuffer, "OK")){
-      delay(200);
+  cleanBuffer(Buffer, BUFSIZE);
+  sendCmd("AT+CGATT=1\r\n");
+  delay(BASE_DELAY);
+  for (int i = 0; i < TRY_COUNT; i++) {
+    readBuffer(Buffer, BUFSIZE);
+    if (NULL != strstr(Buffer, "OK")) {
+      delay(BASE_DELAY);
       break;
-    }else if(NULL != strstr(gprsBuffer,"ERROR")){
+    }
+    if (NULL != strstr(Buffer, "ERROR")) {
       return false;
     }
+    // debug info
+    Serial.println(Buffer);
+    Serial.println("\r\n");
   }
-  */
-  /*
-  sendCmd("AT+CIICR\r\n");
-  while(1){
-    readBuffer(gprsBuffer, 32, 4000);
-    if(NULL != strstr(gprsBuffer, "OK")){
-      delay(200);
-      break;
-    }else if(NULL != strstr(gprsBuffer,"ERROR")){
-      return false;
-    }
-  }
-  */
+  
+  // define PDP context
+  cleanBuffer(Buffer, BUFSIZE);
+  sendCmd("AT+CGDCONT=1,\"IP\",\"plus\"\r\n");
+  delay(BASE_DELAY);
+  readBuffer(Buffer, BUFSIZE);
+  Serial.println(Buffer);
+  Serial.println("\r\n");  
+
 
   // PDP configure
-   sendCmd("AT+CNCFG=0,1,\"plus\"\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");  
+  sendCmd("AT+CNCFG=0,1,\"plus\"\r\n");
+  cleanBuffer(Buffer,200); //by�o 32
+  delay(500);
+  readBuffer(Buffer, 200); //by�o 32
+  Serial.println(Buffer);
+  Serial.println("\r\n");  
    
- 
-  //if(checkSendCmd("AT+CIFSR\r\n","ERROR",4000)){
-  //if(checkSendCmd("AT+CGATT?\r\n","ERROR",4000)){
-  //  return false;
-  //}
 
-      sendCmd("AT+CGREG=1\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");  
+  sendCmd("AT+CGREG=1\r\n");
+  cleanBuffer(Buffer,200); //by�o 32
+  delay(500);
+  readBuffer(Buffer, 200); //by�o 32
+  Serial.println(Buffer);
+  Serial.println("\r\n");  
   
   // PDP INFO
-      sendCmd("AT+CGREG?\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(210);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");  
+  sendCmd("AT+CGREG?\r\n");
+  cleanBuffer(Buffer,200); //by�o 32
+  delay(210);
+  readBuffer(Buffer, 200); //by�o 32
+  Serial.println(Buffer);
+  Serial.println("\r\n");  
 
-      sendCmd("AT+CGDCONT?\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(210);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");  
+   sendCmd("AT+CGDCONT?\r\n");
+  cleanBuffer(Buffer,200); //by�o 32
+  delay(210);
+  readBuffer(Buffer, 200); //by�o 32
+  Serial.println(Buffer);
+  Serial.println("\r\n");  
   
      sendCmd("AT+CGATT?\r\n");
    cleanBuffer(Buffer,200); //by�o 32
    delay(210);
    readBuffer(Buffer, 200); //by�o 32
    Serial.println(Buffer);
-   Serial.println("\r\n");  
+   Serial.println("\r\n");
+   // end PDP info
 
    
     sendCmd("AT+SNPDPID=0\r\n");
@@ -260,21 +212,10 @@ bool DFRobot_SIM7000::attacthService(void)
    delay(500);
    readBuffer(Buffer, 200); //by�o 32
    Serial.println(Buffer);
-   Serial.println("\r\n");   
+   Serial.println("\r\n");
 
-  // // PING GOOGLE
-  //   sendCmd("AT+SNPING4=\"www.google.com\",5,1,20000\r\n");
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(5000);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");   
-  //     delay(5000);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");  
-  //  delay(5000);
 
+   // this goes to http init
   
   //ustalenie czasu 
    sendCmd("AT+CNTPCID=0\r\n");
@@ -334,8 +275,9 @@ bool DFRobot_SIM7000::attacthService(void)
    Serial.println(Buffer);
    Serial.println("\r\n");  
 
+   
 
-   // bezpośrednio w http (do komentarza TCP)
+   
     // http conf
     sendCmd("AT+SHCONF=\"URL\",\"https://172.205.129.224\"\r\n");
     cleanBuffer(Buffer,200); //by�o 32
@@ -361,6 +303,8 @@ bool DFRobot_SIM7000::attacthService(void)
     Serial.println(Buffer);
     Serial.println("\r\n");
 
+    // end of http init
+
 
     // http info   
   //  sendCmd("AT+SHCONF?\r\n");
@@ -382,15 +326,17 @@ bool DFRobot_SIM7000::attacthService(void)
 
 
   //  set body for POST
-   sendCmd("AT+SHBOD=11,2000\r\n");
-   delay(200);
-   sendString("czujnik-ssl");
-   Serial.println("\r\n");
-   cleanBuffer(Buffer,200); //by�o 32
-   delay(500);
-   readBuffer(Buffer, 200); //by�o 32
-   Serial.println(Buffer);
-   Serial.println("\r\n");
+  cleanBuffer(Buffer,200); //by�o 32
+  sendCmd("AT+SHBOD=11,3000\r\n");
+  delay(200);
+  // sendString("czujnik-ssl");   
+  sendString("porzadki-123");
+  delay(200);
+  Serial.println("\r\n");
+  delay(200);
+  readBuffer(Buffer, 200); //by�o 32
+  Serial.println(Buffer);
+  Serial.println("\r\n");
 
    
    sendCmd("AT+SHBOD?\r\n");
@@ -400,12 +346,12 @@ bool DFRobot_SIM7000::attacthService(void)
    Serial.println(Buffer);
    Serial.println("\r\n");
 
-  //  set request type (POST)
+  //  make request (POST)
    sendCmd("AT+SHREQ=\"/\", 3\r\n");
    cleanBuffer(Buffer,200); //by�o 32
    delay(500);
    readBuffer(Buffer, 200); //by�o 32
-   Serial.println("shconf set req to POST\r\n");
+   Serial.println("exeute POST request\r\n");
    Serial.println(Buffer);
    Serial.println("\r\n");
 

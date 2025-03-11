@@ -107,7 +107,7 @@ void setup(){
   // Serial.println(POSTURL);
   // String httpbuff;
   // httpbuff += "{\"deviceNo\":\"";                          //{
-  // httpbuff += deviceNo;                                    //   "deviceNo" : "DEVICE NO",
+  // httpbuff += deviceNo;                                    //   "dueviceNo" : "DEVICE NO",
   // httpbuff += "\",\"sensorDatas\":[{\"sensorsId\":";       //      "sensorDatas":[{
   // httpbuff += sensorsId;                                   //          "sensorsId" :  SENSOR ID,
   // httpbuff += ",\"value\":\"";                             //          "value"     : "  VALUE  "
