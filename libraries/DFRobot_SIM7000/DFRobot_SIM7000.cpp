@@ -730,8 +730,11 @@ bool DFRobot_SIM7000::myHttpInit(char *host)
   
   mySendCmd("AT+SHCONF=\"BODYLEN\", 1024\r\n");
   mySendCmd("AT+SHCONF=\"HEADERLEN\", 256\r\n");
-  delay(1000);
-  mySendCmd("AT+SHCONN\r\n");
+  mySendCmd("AT+SHCONF?\r\n");
+
+  delay(500);
+  sendCmd("AT+SHCONN\r\n");
+  delay(500);
   return true;
 }
 
@@ -740,13 +743,14 @@ bool DFRobot_SIM7000::myPostRequest(char *host, char *data)
   Serial.println("=== HTTP POST ===");
 
   cleanBuffer(buffer, BUFSIZE);
+  cleanBuffer(command, BUFSIZE);
 
   int data_len = strlen(data);
   int data_timeout = 5000;
-  snprintf(buffer, BUFSIZE, "AT+SHBOD=%d,%d\r\n", data_len, data_timeout);
+  snprintf(command, BUFSIZE, "AT+SHBOD=%d,%d\r\n", data_len, data_timeout);
 
-  delay(500);
-  sendCmd(buffer);
+  delay(200);
+  mySendCmd(command);
   delay(1000);
   sendString(data);
   delay(1500);
@@ -789,7 +793,7 @@ bool DFRobot_SIM7000::mySendCmd(char *cmd, int delay_ms = BASE_DELAY, int try_co
 
     if (NULL != strstr(buffer, "OK")) {
       delay(delay_ms);
-      break;
+      return true;
     }
     if (NULL != strstr(buffer, "ERROR")) {
       return false;

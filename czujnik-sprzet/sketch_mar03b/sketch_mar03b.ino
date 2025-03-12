@@ -97,7 +97,7 @@ void setup(){
   delay(200);
   sim7000.myHttpInit(HOST);
   delay(300);
-  sim7000.myPostRequest(HOST, "hello");
+  sim7000.myPostRequest(HOST, "hello-there");
 
   // while(1){
   //   if(sim7000.attacthService()){
