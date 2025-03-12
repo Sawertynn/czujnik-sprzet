@@ -30,7 +30,7 @@
 //This URL is use for get data from tlink, please change the SENSORID to your sensorsId
 #define GETURL    "172.205.129.224"
 
-#define HOST      "https://172.205.129/224"
+#define HOST      "https://172.205.129.224"
 
 SoftwareSerial     mySerial(PIN_RX,PIN_TX);
 DFRobot_SIM7000         sim7000(&mySerial);
@@ -83,37 +83,63 @@ void setup(){
   delay(500);
 
   Serial.println("Attaching service......");
-  while(1){
-    if(sim7000.attacthService()){
-      Serial.println("Attach service");
-      break;
-    }else{
-      Serial.println("Fail to Attach service");
-      delay(1100);
-    }
+  bool ret = sim7000.attacthService();
+  if (ret)
+  {
+    delay(200);
+    Serial.println("Service attached");
+  }
+  else 
+  {
+    Serial.println("Fail: Attaching service");
   }
 
-    Serial.println("Init http.....");
-  while(1){
-    if(sim7000.myHttpInit(HOST)){
-      Serial.println("Success: init http");
-      break;
-    }else{
-      Serial.println("Fail: init http");
-      delay(1100);
-    }
-  }
+  delay(200);
+  sim7000.myHttpInit(HOST);
+  delay(300);
+  sim7000.myPostRequest(HOST, "hello");
 
-      Serial.println("Send POST request.....");
-  while(1){
-    if(sim7000.myPostRequest(HOST, "hello")){
-      Serial.println("Success: send POST");
-      break;
-    }else{
-      Serial.println("Fail: send POST");
-      delay(1100);
-    }
-  }
+  // while(1){
+  //   if(sim7000.attacthService()){
+  //     Serial.println("Attach service");
+  //     break;
+  //   }else{
+  //     Serial.println("Fail to Attach service");
+  //     delay(1100);
+  //   }
+  // }
+
+    // Serial.println("Init http.....");
+    // delay(500);
+    // if (sim7000.myHttpInit(HOST))
+    // {
+    //   Serial.println("http initialized");
+    // }
+    // else
+    // {
+    //   Serial.println("fail: http init");
+    // }
+    // delay(500);
+  // while(1) {
+  //   if(sim7000.myHttpInit(HOST)){
+  //     Serial.println("Success: init http");
+  //     break;
+  //   }else{
+  //     Serial.println("Fail: init http");
+  //     delay(1100);
+  //   }
+  // }
+
+  //     Serial.println("Send POST request.....");
+  // while(1){
+  //   if(sim7000.myPostRequest(HOST, "hello")){
+  //     Serial.println("Success: send POST");
+  //     break;
+  //   }else{
+  //     Serial.println("Fail: send POST");
+  //     delay(1100);
+  //   }
+  // }
 /*
   Serial.println("Init http......");
   while(1){
@@ -146,15 +172,15 @@ void setup(){
   //   }
   // }
 
-  Serial.print("GET from ");
-  Serial.println(GETURL);
-  sim7000.httpGet(GETURL);                                 //HTTP GET
-  Serial.println("Disconnect");
-  sim7000.httpDisconnect();                                //Disconnect
-  Serial.println("Close net work");
-  sim7000.closeNetwork();                                  //Close network
-  Serial.println("Turn off SIM7000");
-  sim7000.turnOFF();                                       //Turn OFF SIM7000
+  // Serial.print("GET from ");
+  // Serial.println(GETURL);
+  // sim7000.httpGet(GETURL);                                 //HTTP GET
+  // Serial.println("Disconnect");
+  // sim7000.httpDisconnect();                                //Disconnect
+  // Serial.println("Close net work");
+  // sim7000.closeNetwork();                                  //Close network
+  // Serial.println("Turn off SIM7000");
+  // sim7000.turnOFF();                                       //Turn OFF SIM7000
 }
 
 void loop() {

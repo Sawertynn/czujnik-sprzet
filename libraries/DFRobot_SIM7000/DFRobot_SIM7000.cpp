@@ -1,8 +1,10 @@
 #include <DFRobot_SIM7000.h>
 #include <stdio.h>
 
-constexpr int BUFSIZE = 200;
+constexpr int BUFSIZE = 80;
 constexpr int TRY_COUNT = 3;
+char buffer[BUFSIZE];
+char command[BUFSIZE];
 // constexpr int BASE_DELAY = 100; // now in .h
 
 
@@ -133,11 +135,14 @@ bool DFRobot_SIM7000::setNetMode(eNet net)
 
 bool DFRobot_SIM7000::attacthService(void)
 {
-  char gprsBuffer[32];
-  char Buffer[BUFSIZE];
+  // function rewritten entirely
+
+  Serial.println("\r\n==== ATTACH SERVICE ==== \r\n");
+  delay(BASE_DELAY);
   
   
-  mySendCmd("AT+CGATT=1\r\n");
+  if (! mySendCmd("AT+CGATT=1\r\n"))
+    return false;
 
   // define PDP context
   mySendCmd("AT+CGDCONT=1,\"IP\",\"plus\"\r\n");
@@ -197,9 +202,7 @@ bool DFRobot_SIM7000::attacthService(void)
    mySendCmd("AT+CASSLCFG=0,\"CRINDEX\",0\r\n");
   
    mySendCmd("AT+CASSLCFG?\r\n");
-
-   while (true) {}
-
+  
    return true;
  
    
@@ -244,7 +247,7 @@ bool DFRobot_SIM7000::attacthService(void)
 
   //  while (1) {}
 
-  return true;
+  // return true;
 }
 
 int DFRobot_SIM7000::checkSignalQuality(void)
@@ -531,62 +534,77 @@ bool DFRobot_SIM7000::httpInit(eNet net)
 
 bool DFRobot_SIM7000::httpConnect(const char *host)
 {
-  httpDisconnect();
-  delay(1000);
-  if(!checkSendCmd("AT+HTTPINIT\r\n","OK")){
-    return false;
-  }
-  if(!checkSendCmd("AT+HTTPPARA=\"CID\",\"1\"\r\n","OK")){
-    return false;
-  }
-  sendCmd("AT+HTTPPARA=\"URL\",\"");
-  sendCmd(host);
-  if(!checkSendCmd("\"\r\n","OK")){
-    return false;
-  }
+    Serial.println("=== HTTP CONNECT ===");
+  Serial.println("\r\n");
+  // char buffer[BUFSIZE];
+  char command[BUFSIZE];
+
+  // cleanBuffer(buffer, BUFSIZE);
+  cleanBuffer(command, BUFSIZE);
+
+  snprintf(command, BUFSIZE, "AT+SHCONF=\"URL\",\"%s\"\r\n", host);
+  mySendCmd(command);
+  
+  mySendCmd("AT+SHCONF=\"BODYLEN\", 1024\r\n");
+  mySendCmd("AT+SHCONF=\"HEADERLEN\", 256\r\n");
+  mySendCmd("AT+SHCONN\r\n");
   return true;
+  // httpDisconnect();
+  // delay(1000);
+  // if(!checkSendCmd("AT+HTTPINIT\r\n","OK")){
+  //   return false;
+  // }
+  // if(!checkSendCmd("AT+HTTPPARA=\"CID\",\"1\"\r\n","OK")){
+  //   return false;
+  // }
+  // sendCmd("AT+HTTPPARA=\"URL\",\"");
+  // sendCmd(host);
+  // if(!checkSendCmd("\"\r\n","OK")){
+  //   return false;
+  // }
+  // return true;
 }
 
 bool DFRobot_SIM7000::httpPost(const char *host , String data)
 {
     
-  if(!httpConnect(host)){
-    return false;
-  }
-  char resp[40];
-  sendCmd("AT+HTTPDATA=");
-  itoa(data.length(), resp, 10);
-  sendString(resp);
+  // if(!httpConnect(host)){
+  //   return false;
+  // }
+  // char resp[40];
+  // sendCmd("AT+HTTPDATA=");
+  // itoa(data.length(), resp, 10);
+  // sendString(resp);
     
-  if(!checkSendCmd(",4000\r\n","DOWNLOAD",5)){
-    return false;
-  }
-  delay(500);
-  DBG(data.c_str());
-  sendString(data.c_str());
+  // if(!checkSendCmd(",4000\r\n","DOWNLOAD",5)){
+  //   return false;
+  // }
+  // delay(500);
+  // DBG(data.c_str());
+  // sendString(data.c_str());
   
-  while(1){
-    readBuffer(resp,20);
-    if(NULL != strstr(resp,"OK")){
-      break;
-    }
-    if(NULL != strstr(resp,"ERROR")){
-      return false;
-    }
-  }
-  sendCmd("AT+HTTPACTION=1\r\n");
-  while(1){
-    readBuffer(resp,40);
-    if(NULL != strstr(resp,"200")){
-      break;
-    }
-    if(NULL != strstr(resp,"601")){
-      return false;
-    }
-  }
-  //delay(11000);
-  sendCmd("AT+HTTPREAD\r\n");
-	return true;
+  // while(1){
+  //   readBuffer(resp,20);
+  //   if(NULL != strstr(resp,"OK")){
+  //     break;
+  //   }
+  //   if(NULL != strstr(resp,"ERROR")){
+  //     return false;
+  //   }
+  // }
+  // sendCmd("AT+HTTPACTION=1\r\n");
+  // while(1){
+  //   readBuffer(resp,40);
+  //   if(NULL != strstr(resp,"200")){
+  //     break;
+  //   }
+  //   if(NULL != strstr(resp,"601")){
+  //     return false;
+  //   }
+  // }
+  // //delay(11000);
+  // sendCmd("AT+HTTPREAD\r\n");
+	// return true;
 }
 
 void DFRobot_SIM7000::httpGet(const char *host)
@@ -701,72 +719,79 @@ int DFRobot_SIM7000::batteryPower(void)
 
 bool DFRobot_SIM7000::myHttpInit(char *host)
 {
-  char buffer[BUFSIZE];
-  char command[BUFSIZE];
 
-  cleanBuffer(buffer, BUFSIZE);
+  Serial.println("=== HTTP INIT ===");
+  Serial.println("\r\n");
+
   cleanBuffer(command, BUFSIZE);
 
   snprintf(command, BUFSIZE, "AT+SHCONF=\"URL\",\"%s\"\r\n", host);
-  mySendCmd(command);
+  sendCmd(command);
   
   mySendCmd("AT+SHCONF=\"BODYLEN\", 1024\r\n");
   mySendCmd("AT+SHCONF=\"HEADERLEN\", 256\r\n");
-  // mySendCmd("AT+SHCONN\r\n");
+  delay(1000);
+  mySendCmd("AT+SHCONN\r\n");
   return true;
 }
 
 bool DFRobot_SIM7000::myPostRequest(char *host, char *data)
 {
-  char buffer[BUFSIZE];
-  char command[BUFSIZE];
+  Serial.println("=== HTTP POST ===");
 
-  // snprintf(command, BUFSIZE, "AT+SHCONF=\"URL\",\"%s\"\r\n", host);
-  //  set body for POST
-  delay(2000);
-  cleanBuffer(buffer,BUFSIZE); //by�o 32
-  sendCmd("AT+SHBOD=11,3000\r\n");
-  delay(200);
-  sendString("porzadki-56");
-  delay(200);
-  Serial.println("\r\n");
-  delay(200);
-  readBuffer(buffer, BUFSIZE); //by�o 32
+  cleanBuffer(buffer, BUFSIZE);
+
+  int data_len = strlen(data);
+  int data_timeout = 5000;
+  snprintf(buffer, BUFSIZE, "AT+SHBOD=%d,%d\r\n", data_len, data_timeout);
+
+  delay(500);
+  sendCmd(buffer);
+  delay(1000);
+  sendString(data);
+  delay(1500);
+  
+  cleanBuffer(buffer, BUFSIZE);
+  delay(300);
+  readBuffer(buffer, BUFSIZE);
   Serial.println(buffer);
   Serial.println("\r\n");
 
    
+  cleanBuffer(buffer, BUFSIZE);
   sendCmd("AT+SHBOD?\r\n");
-  cleanBuffer(buffer,BUFSIZE); //by�o 32
   delay(500);
   readBuffer(buffer, 200); //by�o 32
   Serial.println(buffer);
   Serial.println("\r\n");
 
   //  make request (POST)
-   mySendCmd("AT+SHREQ=\"/\", 3\r\n");
+  cleanBuffer(buffer, BUFSIZE);
+  sendCmd("AT+SHREQ=\"/\", 3\r\n");
+  delay(500);
+  readBuffer(buffer, 200); //by�o 32
+  Serial.println(buffer);
+  Serial.println("\r\n");
 
   return true;
 }
 
 bool DFRobot_SIM7000::mySendCmd(char *cmd, int delay_ms = BASE_DELAY, int try_count = 3)
-{
-  char Buffer[BUFSIZE];
-  
-  cleanBuffer(Buffer, BUFSIZE);
+{  
+  cleanBuffer(buffer, BUFSIZE);
   sendCmd(cmd);
   for (int i = 0; i < try_count; i++) {
     delay(delay_ms);
-    readBuffer(Buffer, BUFSIZE);
+    readBuffer(buffer, BUFSIZE);
 
-    Serial.println(Buffer);
+    Serial.println(buffer);
     Serial.println("\r\n");
 
-    if (NULL != strstr(Buffer, "OK")) {
+    if (NULL != strstr(buffer, "OK")) {
       delay(delay_ms);
       break;
     }
-    if (NULL != strstr(Buffer, "ERROR")) {
+    if (NULL != strstr(buffer, "ERROR")) {
       return false;
     }
   }

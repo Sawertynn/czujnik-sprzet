@@ -304,6 +304,27 @@ To use this library, first download the library file, paste it into the \Arduino
    * @return Longitude value
    */
   const char* getLongitude(void);
+  
+  /**
+ * @fn myHttpInit
+ * @brief Initialize HTTP connection
+ * @param host the URL of host
+ * @return bool type, indicating status
+ * @retval true Success 
+ * @retval false Failed
+ */
+  bool myHttpInit(char *host);
+
+/**
+ * @fn myPostRequest
+ * @brief Send POST Request
+ * @param host the URL of host
+ * @param data the data to be sent
+ * @return bool type, indicating status
+ * @retval true Success 
+ * @retval false Failed
+ */
+  bool myPostRequest(char* host, char* data);
 ```
 
 ## Compatibility

@@ -41,6 +41,7 @@ httpConnect	KEYWORD2
 httpPost	KEYWORD2
 httpGet	KEYWORD2
 httpDisconnect	KEYWORD2
+myHttpInit KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
