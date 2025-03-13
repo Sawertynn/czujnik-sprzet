@@ -730,11 +730,8 @@ bool DFRobot_SIM7000::myHttpInit(char *host)
   
   mySendCmd("AT+SHCONF=\"BODYLEN\", 1024\r\n");
   mySendCmd("AT+SHCONF=\"HEADERLEN\", 256\r\n");
-  mySendCmd("AT+SHCONF?\r\n");
+  mySendCmd("AT+SHCONF?\r\n, 50, 1");
 
-  delay(500);
-  sendCmd("AT+SHCONN\r\n");
-  delay(500);
   return true;
 }
 
@@ -744,6 +741,9 @@ bool DFRobot_SIM7000::myPostRequest(char *host, char *data)
 
   cleanBuffer(buffer, BUFSIZE);
   cleanBuffer(command, BUFSIZE);
+
+  mySendCmd("AT+SHCONN\r\n", 100, 20);
+  delay(100);
 
   int data_len = strlen(data);
   int data_timeout = 5000;
