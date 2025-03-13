@@ -343,7 +343,7 @@ public:
   bool myPostRequest(char* host, char* data);
 
 private:
-  bool mySendCmd(char* cmd, int base_delay = BASE_DELAY, int tryCount = 3);
+  bool mySendCmd(char *cmd, int try_count = 3, int delay_ms = BASE_DELAY, int read_reps = 3);
   
 private:
   char  _latitude[8];

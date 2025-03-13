@@ -720,8 +720,6 @@ int DFRobot_SIM7000::batteryPower(void)
 bool DFRobot_SIM7000::myHttpInit(char *host)
 {
 
-  Serial.println("=== HTTP INIT ===");
-  Serial.println("\r\n");
 
   cleanBuffer(command, BUFSIZE);
 
@@ -730,27 +728,25 @@ bool DFRobot_SIM7000::myHttpInit(char *host)
   
   mySendCmd("AT+SHCONF=\"BODYLEN\", 1024\r\n");
   mySendCmd("AT+SHCONF=\"HEADERLEN\", 256\r\n");
-  mySendCmd("AT+SHCONF?\r\n, 50, 1");
+  mySendCmd("AT+SHCONF?\r\n, 50, 1", 1);
 
   return true;
 }
 
 bool DFRobot_SIM7000::myPostRequest(char *host, char *data)
 {
-  Serial.println("=== HTTP POST ===");
-
   cleanBuffer(buffer, BUFSIZE);
   cleanBuffer(command, BUFSIZE);
 
-  mySendCmd("AT+SHCONN\r\n", 100, 20);
-  delay(100);
+  mySendCmd("AT+SHCONN\r\n", 10);
+  delay(1000);
 
   int data_len = strlen(data);
   int data_timeout = 5000;
   snprintf(command, BUFSIZE, "AT+SHBOD=%d,%d\r\n", data_len, data_timeout);
 
   delay(200);
-  mySendCmd(command);
+  sendCmd(command);
   delay(1000);
   sendString(data);
   delay(1500);
@@ -777,28 +773,37 @@ bool DFRobot_SIM7000::myPostRequest(char *host, char *data)
   Serial.println(buffer);
   Serial.println("\r\n");
 
+
+  mySendCmd("AT+SHDISC\r\n");
+
   return true;
 }
 
-bool DFRobot_SIM7000::mySendCmd(char *cmd, int delay_ms = BASE_DELAY, int try_count = 3)
+bool DFRobot_SIM7000::mySendCmd(char *cmd, int try_count = 3, int delay_ms = BASE_DELAY, int read_reps = 3)
 {  
+
   cleanBuffer(buffer, BUFSIZE);
-  sendCmd(cmd);
-  for (int i = 0; i < try_count; i++) {
+  delay(delay_ms);
+  for (int r = 0; r < try_count; r++) {
+    
+    sendCmd(cmd);
     delay(delay_ms);
-    readBuffer(buffer, BUFSIZE);
 
-    Serial.println(buffer);
-    Serial.println("\r\n");
-
-    if (NULL != strstr(buffer, "OK")) {
+    for (int i = 0; i < read_reps; i++) {
+      readBuffer(buffer, BUFSIZE);
       delay(delay_ms);
-      return true;
-    }
-    if (NULL != strstr(buffer, "ERROR")) {
-      return false;
-    }
-  }
+  
+      if (NULL != strstr(buffer, "OK")) {
+        Serial.println(buffer);
+        return true;
+      }
+      if (NULL != strstr(buffer, "ERROR")) {
+        Serial.println(buffer);
+        break;
+      }
 
-  return true;
+    }
+    Serial.println(buffer);
+  }
+  return false;
 }

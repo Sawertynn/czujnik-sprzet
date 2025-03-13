@@ -94,10 +94,19 @@ void setup(){
     Serial.println("Fail: Attaching service");
   }
 
+
+  Serial.println("=== HTTP INIT ===");
   delay(200);
+
   sim7000.myHttpInit(HOST);
-  delay(300);
+
+
+  Serial.println("=== HTTP CONN + POST ===");
+  delay(200);
   sim7000.myPostRequest(HOST, "hello-there");
+
+  Serial.println("=== HTTP second POST ===");
+  sim7000.myPostRequest(HOST, "hello-AGAIN-there");
 
   // while(1){
   //   if(sim7000.attacthService()){
