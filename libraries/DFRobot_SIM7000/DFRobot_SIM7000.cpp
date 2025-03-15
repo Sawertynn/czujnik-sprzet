@@ -1,7 +1,7 @@
 #include <DFRobot_SIM7000.h>
 #include <stdio.h>
 
-constexpr int BUFSIZE = 128;
+constexpr int BUFSIZE = 64;
 constexpr int TRY_COUNT = 3;
 char buffer[BUFSIZE];
 char command[BUFSIZE];
@@ -642,9 +642,8 @@ bool DFRobot_SIM7000::setSSL(char *ntp_server, int time_zone_full_hours)
   mySendCmd("AT+CNTPCID=0\r\n");
 
   cleanBuffer(command, BUFSIZE);
-  int time_zone_quarters = time_zone_full_hours * 4;
+  int time_zone_quarters = -12; // = time_zone_full_hours * 4;
   snprintf(command, BUFSIZE, "AT+CNTP=\"%s\",%d,0,0\r\n", ntp_server, time_zone_quarters);
-  
   mySendCmd(command);
   
   mySendCmd("AT+CNTP\r\n");
@@ -661,6 +660,8 @@ bool DFRobot_SIM7000::setSSL(char *ntp_server, int time_zone_full_hours)
   // check SSL
   // mySendCmd("AT+CASSLCFG?\r\n");
 
+  return true;
+
 }
 
 bool DFRobot_SIM7000::myHttpInit(char *host)
@@ -670,8 +671,8 @@ bool DFRobot_SIM7000::myHttpInit(char *host)
   snprintf(command, BUFSIZE, "AT+SHCONF=\"URL\",\"%s\"\r\n", host);
   sendCmd(command);
   
-  mySendCmd("AT+SHCONF=\"BODYLEN\", 1024\r\n");
-  mySendCmd("AT+SHCONF=\"HEADERLEN\", 256\r\n");
+  mySendCmd("AT+SHCONF=\"BODYLEN\", 128\r\n");
+  mySendCmd("AT+SHCONF=\"HEADERLEN\", 128\r\n");
 
   // check http conf
   // mySendCmd("AT+SHCONF?\r\n, 50, 1", 1);
@@ -684,7 +685,9 @@ bool DFRobot_SIM7000::myPostRequest(char *host, char *data)
   cleanBuffer(buffer, BUFSIZE);
   cleanBuffer(command, BUFSIZE);
 
-  mySendCmd("AT+SHCONN\r\n", 5);
+  if (!mySendCmd("AT+SHCONN\r\n", 5)) {
+    return false;
+  }
   delay(1000);
 
   int data_len = strlen(data);
@@ -740,7 +743,7 @@ bool DFRobot_SIM7000::mySendCmd(char *cmd, int try_count = 3, int delay_ms = BAS
 {  
 
   cleanBuffer(buffer, BUFSIZE);
-  delay(delay_ms);
+  // delay(delay_ms);
   for (int r = 0; r < try_count; r++) {
     
     sendCmd(cmd);
@@ -748,7 +751,7 @@ bool DFRobot_SIM7000::mySendCmd(char *cmd, int try_count = 3, int delay_ms = BAS
 
     for (int i = 0; i < read_reps; i++) {
       readBuffer(buffer, BUFSIZE);
-      delay(delay_ms);
+      // delay(delay_ms);
   
       if (NULL != strstr(buffer, "OK")) {
         Serial.println(buffer);
@@ -760,7 +763,7 @@ bool DFRobot_SIM7000::mySendCmd(char *cmd, int try_count = 3, int delay_ms = BAS
         delay(delay_ms);
         break;
       }
-
+      delay(delay_ms);
     }
     Serial.println(buffer);
   }

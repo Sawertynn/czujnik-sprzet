@@ -57,7 +57,7 @@ void setup(){
   if(sim7000.checkSIMStatus()){                            //Check SIM card
     Serial.println("SIM card READY");
   }else{
-    Serial.println("SIM card ERROR, Check if you have insert SIM card and restart SIM7000");
+    Serial.println("SIM card ERROR");
     while(1);
   }
 
@@ -114,7 +114,7 @@ void setup(){
 
   Serial.println("=== HTTP CONN + POST ===");
 
-  if (sim7000.myPostRequest(HOST, "first-part 1")) {
+  if (sim7000.myPostRequest(HOST, "L=1,R=234---")) {
     Serial.println("Success: request sent");
   }
   else
@@ -123,13 +123,13 @@ void setup(){
   }
 
 
-  Serial.println("=== HTTP second POST ===");
-  delay(200);
-  sim7000.myPostRequest(HOST, "second-part 22");
+  // Serial.println("=== HTTP second POST ===");
+  // delay(200);
+  // sim7000.myPostRequest(HOST, "second-part 22");
   
-  Serial.println("=== HTTP POST no. 3 ===");
-  delay(200);
-  sim7000.myPostRequest(HOST, "third-part 333");
+  // Serial.println("=== HTTP POST no. 3 ===");
+  // delay(200);
+  // sim7000.myPostRequest(HOST, "third-part 333");
 
   // while(1){
   //   if(sim7000.attacthService()){
