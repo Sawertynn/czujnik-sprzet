@@ -135,14 +135,12 @@ bool DFRobot_SIM7000::setNetMode(eNet net)
 
 bool DFRobot_SIM7000::attacthService(void)
 {
-  // suppress SMS messages bc they cause problems with commands
+  // suppress SMS messages bc they cause problems with commands <- does not work, sms goes through
   mySendCmd("AT+CNMI=0,0,0,0\r\n");
 
   // disable GNSS (GPS) bc it messes with networking
   mySendCmd("AT+CGNSPWR=0\r\n");
 
-
-  Serial.println("\r\n==== ATTACH SERVICE ==== \r\n");
   delay(BASE_DELAY);
   
   
@@ -155,16 +153,12 @@ bool DFRobot_SIM7000::attacthService(void)
 
   // PDP configure
   mySendCmd("AT+CNCFG=0,1,\"plus\"\r\n");
- 
-  
-  mySendCmd("AT+CGREG=1\r\n");
+
+  mySendCmd("AT+CGREG=0\r\n"); // was 1, this change should disable sms problems, i guess
 
   mySendCmd("AT+SNPDPID=0\r\n");
  
   mySendCmd("AT+CNACT=0,1\r\n");
-  
-
-   // this goes to http init
   
    return true;
 }
@@ -642,7 +636,8 @@ bool DFRobot_SIM7000::setSSL(char *ntp_server, int time_zone_full_hours)
   mySendCmd("AT+CNTPCID=0\r\n");
 
   cleanBuffer(command, BUFSIZE);
-  int time_zone_quarters = -12; // = time_zone_full_hours * 4;
+  // int time_zone_quarters = -12;
+  int time_zone_quarters = time_zone_full_hours * 4;
   snprintf(command, BUFSIZE, "AT+CNTP=\"%s\",%d,0,0\r\n", ntp_server, time_zone_quarters);
   mySendCmd(command);
   
@@ -670,9 +665,10 @@ bool DFRobot_SIM7000::myHttpInit(char *host)
   cleanBuffer(command, BUFSIZE);
   snprintf(command, BUFSIZE, "AT+SHCONF=\"URL\",\"%s\"\r\n", host);
   sendCmd(command);
-  delay(100);
 
+  delay(100);
   mySendCmd("AT+SHCONF=\"BODYLEN\", 128\r\n");
+  delay(100);
   mySendCmd("AT+SHCONF=\"HEADERLEN\", 128\r\n");
 
   // check http conf
@@ -689,15 +685,15 @@ bool DFRobot_SIM7000::myPostRequest(char *host, char *data)
   if (!mySendCmd("AT+SHCONN\r\n", 5)) {
     return false;
   }
-  delay(1000);
+  delay(200);
 
   int data_len = strlen(data);
-  int data_timeout = 9000;
+  int data_timeout = 10000;
   snprintf(command, BUFSIZE, "AT+SHBOD=%d,%d\r\n", data_len, data_timeout);
 
   delay(200);
   sendCmd(command);
-  delay(500);
+  delay(400);
   sendString(data);
   delay(500);
   
@@ -705,7 +701,8 @@ bool DFRobot_SIM7000::myPostRequest(char *host, char *data)
   delay(200);
   readBuffer(buffer, BUFSIZE);
   Serial.println(buffer);
-  if (strstr(buffer, "OK") == NULL){
+  if (strstr(buffer, "ERROR") != NULL){
+    mySendCmd("AT+SHDISC\r\n");
     return false;
   }
 
@@ -720,6 +717,7 @@ bool DFRobot_SIM7000::myPostRequest(char *host, char *data)
 
   //  make request (POST)
   if(! mySendCmd("AT+SHREQ=\"/\", 3\r\n")) {
+    mySendCmd("AT+SHDISC\r\n");
     return false;
   }
 

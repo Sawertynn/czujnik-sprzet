@@ -35,6 +35,7 @@ DFRobot_SIM7000         sim7000(&mySerial);
 
 void setup(){
   int signalStrength;
+  bool ret;
   Serial.begin(9600);
   mySerial.begin(19200);
   Serial.println("Turn ON SIM7000......");
@@ -114,75 +115,23 @@ void setup(){
 
   Serial.println("=== HTTP CONN + POST ===");
 
-  if (sim7000.myPostRequest(HOST, "A=3456789_B=3456789_C=34567890")) {
+  // String httpbuff;
+  // httpbuff += "{\"deviceNo\":\"";                          //{
+  // httpbuff += deviceNo;                                    //   "dueviceNo" : "DEVICE NO",
+  // httpbuff += "\",\"sensorDatas\":[{\"sensorsId\":";       //      "sensorDatas":[{
+  // httpbuff += sensorsId;                                   //          "sensorsId" :  SENSOR ID,
+  // httpbuff += ",\"value\":\"";                             //          "value"     : "  VALUE  "
+  // httpbuff += value;                                       //       }]
+  // httpbuff += "\"}]}";                                     //}
+
+  ret = sim7000.myPostRequest(HOST, "A=3456789_B=3456789_C=3456789_D=3456789_E=3456789_F=34567890");
+  if (ret) {
     Serial.println("Success: request sent");
   }
   else
   {
     Serial.println("Fail: post");
   }
-
-
-  // Serial.println("=== HTTP second POST ===");
-  // delay(200);
-  // sim7000.myPostRequest(HOST, "second-part 22");
-  
-  // Serial.println("=== HTTP POST no. 3 ===");
-  // delay(200);
-  // sim7000.myPostRequest(HOST, "third-part 333");
-
-  // while(1){
-  //   if(sim7000.attacthService()){
-  //     Serial.println("Attach service");
-  //     break;
-  //   }else{
-  //     Serial.println("Fail to Attach service");
-  //     delay(1100);
-  //   }
-  // }
-
-    // Serial.println("Init http.....");
-    // delay(500);
-    // if (sim7000.myHttpInit(HOST))
-    // {
-    //   Serial.println("http initialized");
-    // }
-    // else
-    // {
-    //   Serial.println("fail: http init");
-    // }
-    // delay(500);
-  // while(1) {
-  //   if(sim7000.myHttpInit(HOST)){
-  //     Serial.println("Success: init http");
-  //     break;
-  //   }else{
-  //     Serial.println("Fail: init http");
-  //     delay(1100);
-  //   }
-  // }
-
-  //     Serial.println("Send POST request.....");
-  // while(1){
-  //   if(sim7000.myPostRequest(HOST, "hello")){
-  //     Serial.println("Success: send POST");
-  //     break;
-  //   }else{
-  //     Serial.println("Fail: send POST");
-  //     delay(1100);
-  //   }
-  // }
-/*
-  Serial.println("Init http......");
-  while(1){
-    if(sim7000.httpInit(sim7000.eGPRS)){                          //Init http service
-      Serial.println("HTTP init !");
-      break;
-    }else{
-      Serial.println("Fail to init http");
-    }
-  }
-*/
 
   // MICHAŁOWY POST
   // Serial.print("POST to ");
