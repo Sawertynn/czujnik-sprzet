@@ -636,12 +636,16 @@ int DFRobot_SIM7000::batteryPower(void)
 
 // Additional functions
 
-bool DFRobot_SIM7000::myHttpInit(char *host)
+bool DFRobot_SIM7000::setSSL(char *ntp_server, int time_zone_full_hours)
 {
   // set time
   mySendCmd("AT+CNTPCID=0\r\n");
+
+  cleanBuffer(command, BUFSIZE);
+  int time_zone_quarters = time_zone_full_hours * 4;
+  snprintf(command, BUFSIZE, "AT+CNTP=\"%s\",%d,0,0\r\n", ntp_server, time_zone_quarters);
   
-  mySendCmd("AT+CNTP=\"pool.ntp.org\",-12,0,0\r\n");
+  mySendCmd(command);
   
   mySendCmd("AT+CNTP\r\n");
   
@@ -657,8 +661,10 @@ bool DFRobot_SIM7000::myHttpInit(char *host)
   // check SSL
   // mySendCmd("AT+CASSLCFG?\r\n");
 
+}
 
-  
+bool DFRobot_SIM7000::myHttpInit(char *host)
+{  
   // configure http
   cleanBuffer(command, BUFSIZE);
   snprintf(command, BUFSIZE, "AT+SHCONF=\"URL\",\"%s\"\r\n", host);

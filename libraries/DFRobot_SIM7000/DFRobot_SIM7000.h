@@ -320,7 +320,18 @@ public:
    */
   const char* getLongitude(void);
 
-public:
+/**
+ * @fn setSSL
+ * @brief Configure and set up SSL
+ * @param ntp_server NTP server's URL
+ * @param time_zone_full_hours time zone, in full hours offset from UTC 
+ * @return bool type, indicating status
+ * @retval true Success 
+ * @retval false Failed
+ */
+bool setSSL(char *ntp_server, int time_zone);
+
+
 /**
  * @fn myHttpInit
  * @brief Initialize HTTP connection

@@ -25,12 +25,9 @@
 #define sensorsId "SENSOR ID" //sensor ID
 #define value     "VALUE"
 
-//This URL is use for post data to tlink
-#define POSTURL   "172.205.129.224"
-//This URL is use for get data from tlink, please change the SENSORID to your sensorsId
-#define GETURL    "172.205.129.224"
-
 #define HOST      "https://172.205.129.224"
+#define NTP_SERVER "pool.ntp.org"
+#define TIME_ZONE 1
 
 SoftwareSerial     mySerial(PIN_RX,PIN_TX);
 DFRobot_SIM7000         sim7000(&mySerial);
@@ -92,6 +89,16 @@ void setup(){
     Serial.println("Fail: Attaching service");
   }
 
+  Serial.println("=== SET SSL ===");
+  if (sim7000.setSSL(NTP_SERVER, TIME_ZONE))
+  {
+    Serial.println("Success: set SSL");
+  }
+  else 
+  {
+    Serial.println("Fail: set SSL");
+  }
+
 
   Serial.println("=== HTTP INIT ===");
 
@@ -106,8 +113,14 @@ void setup(){
 
 
   Serial.println("=== HTTP CONN + POST ===");
-  sim7000.myPostRequest(HOST, "first-part 1");
-  Serial.println("*** REQUEST SENT ***");
+
+  if (sim7000.myPostRequest(HOST, "first-part 1")) {
+    Serial.println("Success: request sent");
+  }
+  else
+  {
+    Serial.println("Fail: could not send request");
+  }
 
 
   Serial.println("=== HTTP second POST ===");
