@@ -115,15 +115,18 @@ void setup(){
 
   Serial.println("=== HTTP CONN + POST ===");
 
-  // String httpbuff;
-  // httpbuff += "{\"deviceNo\":\"";                          //{
-  // httpbuff += deviceNo;                                    //   "dueviceNo" : "DEVICE NO",
-  // httpbuff += "\",\"sensorDatas\":[{\"sensorsId\":";       //      "sensorDatas":[{
-  // httpbuff += sensorsId;                                   //          "sensorsId" :  SENSOR ID,
-  // httpbuff += ",\"value\":\"";                             //          "value"     : "  VALUE  "
-  // httpbuff += value;                                       //       }]
-  // httpbuff += "\"}]}";                                     //}
+  String httpbuff;
+  httpbuff += "{\"deviceNo\":\"";                          //{
+  httpbuff += deviceNo;                                    //   "dueviceNo" : "DEVICE NO",
+  httpbuff += "\",\"sensorDatas\":[{\"sensorsId\":";       //      "sensorDatas":[{
+  httpbuff += sensorsId;                                   //          "sensorsId" :  SENSOR ID,
+  httpbuff += ",\"value\":\"";                             //          "value"     : "  VALUE  "
+  httpbuff += value;                                       //       }]
+  httpbuff += "\"}]}";                                     //}
+  // httpbuff += "-- hello there --";
+  // httpbuff += "VERY LONG STRING I WONDER IF THIS WILL FIT TOO";
 
+  // ret = sim7000.myPostRequest(HOST, httpbuff);
   ret = sim7000.myPostRequest(HOST, "A=3456789_B=3456789_C=3456789_D=3456789_E=3456789_F=34567890");
   if (ret) {
     Serial.println("Success: request sent");
@@ -132,6 +135,8 @@ void setup(){
   {
     Serial.println("Fail: post");
   }
+
+  Serial.println("### END OF PROGRAM ###");
 
   // MICHAŁOWY POST
   // Serial.print("POST to ");

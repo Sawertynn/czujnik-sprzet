@@ -344,14 +344,14 @@ bool setSSL(char *ntp_server, int time_zone);
 
 /**
  * @fn myPostRequest
- * @brief Connect to host and send POST Request with 
+ * @brief Connect to host, send POST Request and disconnect
  * @param host the URL of host
  * @param data the data to be sent
  * @return bool type, indicating status
  * @retval true Success 
  * @retval false Failed
  */
-  bool myPostRequest(char* host, char* data);
+  bool myPostRequest(char* host, String data);
 
 private:
   bool mySendCmd(char *cmd, int try_count = 3, int delay_ms = BASE_DELAY, int read_reps = 3);

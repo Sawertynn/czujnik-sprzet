@@ -677,7 +677,7 @@ bool DFRobot_SIM7000::myHttpInit(char *host)
   return true;
 }
 
-bool DFRobot_SIM7000::myPostRequest(char *host, char *data)
+bool DFRobot_SIM7000::myPostRequest(char *host, String data)
 {
   cleanBuffer(buffer, BUFSIZE);
   cleanBuffer(command, BUFSIZE);
@@ -685,20 +685,34 @@ bool DFRobot_SIM7000::myPostRequest(char *host, char *data)
   if (!mySendCmd("AT+SHCONN\r\n", 5)) {
     return false;
   }
-  delay(200);
+  delay(500);
 
-  int data_len = strlen(data);
+
+  //!TODO: setting body must be fixed
+  int data_len = data.length();
   int data_timeout = 10000;
   snprintf(command, BUFSIZE, "AT+SHBOD=%d,%d\r\n", data_len, data_timeout);
 
   delay(200);
   sendCmd(command);
+  delay(50);
+
+  // wait for input prompt
+  // for (int i = 0; i < 20; i++) {
+  //   readBuffer(buffer, BUFSIZE);
+  //   delay(50);
+  //   if (strstr(buffer, ">") != NULL) {
+  //     break;
+  //   }
+  //   if (strstr(buffer, "ERROR") != NULL) {
+  //     return false;
+  //   }
+  // }
+
   delay(400);
-  sendString(data);
+  sendString(data.c_str());
   delay(500);
   
-  cleanBuffer(buffer, BUFSIZE);
-  delay(200);
   readBuffer(buffer, BUFSIZE);
   Serial.println(buffer);
   if (strstr(buffer, "ERROR") != NULL){
