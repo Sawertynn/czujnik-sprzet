@@ -333,7 +333,7 @@ public:
 
 /**
  * @fn myPostRequest
- * @brief Send POST Request
+ * @brief Connect to host and send POST Request with 
  * @param host the URL of host
  * @param data the data to be sent
  * @return bool type, indicating status

@@ -83,10 +83,8 @@ void setup(){
   delay(500);
 
   Serial.println("Attaching service......");
-  bool ret = sim7000.attacthService();
-  if (ret)
+  if (sim7000.attacthService())
   {
-    delay(200);
     Serial.println("Service attached");
   }
   else 
@@ -96,17 +94,29 @@ void setup(){
 
 
   Serial.println("=== HTTP INIT ===");
-  delay(200);
 
-  sim7000.myHttpInit(HOST);
+  if (sim7000.myHttpInit(HOST))
+  {
+    Serial.println("Success: http init");
+  }
+  else
+  {
+    Serial.println("Fail: http init");
+  }
 
 
   Serial.println("=== HTTP CONN + POST ===");
-  delay(200);
-  sim7000.myPostRequest(HOST, "hello-there");
+  sim7000.myPostRequest(HOST, "first-part 1");
+  Serial.println("*** REQUEST SENT ***");
+
 
   Serial.println("=== HTTP second POST ===");
-  sim7000.myPostRequest(HOST, "hello-AGAIN-there");
+  delay(200);
+  sim7000.myPostRequest(HOST, "second-part 22");
+  
+  Serial.println("=== HTTP POST no. 3 ===");
+  delay(200);
+  sim7000.myPostRequest(HOST, "third-part 333");
 
   // while(1){
   //   if(sim7000.attacthService()){

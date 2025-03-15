@@ -1,7 +1,7 @@
 #include <DFRobot_SIM7000.h>
 #include <stdio.h>
 
-constexpr int BUFSIZE = 80;
+constexpr int BUFSIZE = 128;
 constexpr int TRY_COUNT = 3;
 char buffer[BUFSIZE];
 char command[BUFSIZE];
@@ -135,7 +135,12 @@ bool DFRobot_SIM7000::setNetMode(eNet net)
 
 bool DFRobot_SIM7000::attacthService(void)
 {
-  // function rewritten entirely
+  // suppress SMS messages bc they cause problems with commands
+  mySendCmd("AT+CNMI=0,0,0,0\r\n");
+
+  // disable GNSS (GPS) bc it messes with networking
+  mySendCmd("AT+CGNSPWR=0\r\n");
+
 
   Serial.println("\r\n==== ATTACH SERVICE ==== \r\n");
   delay(BASE_DELAY);
@@ -153,30 +158,6 @@ bool DFRobot_SIM7000::attacthService(void)
  
   
   mySendCmd("AT+CGREG=1\r\n");
- 
-  // // PDP INFO
-  // sendCmd("AT+CGREG?\r\n");
-  // cleanBuffer(Buffer,200); //by�o 32
-  // delay(210);
-  // readBuffer(Buffer, 200); //by�o 32
-  // Serial.println(Buffer);
-  // Serial.println("\r\n");  
-
-  //  sendCmd("AT+CGDCONT?\r\n");
-  // cleanBuffer(Buffer,200); //by�o 32
-  // delay(210);
-  // readBuffer(Buffer, 200); //by�o 32
-  // Serial.println(Buffer);
-  // Serial.println("\r\n");  
-  
-  //    sendCmd("AT+CGATT?\r\n");
-  //  cleanBuffer(Buffer,200); //by�o 32
-  //  delay(210);
-  //  readBuffer(Buffer, 200); //by�o 32
-  //  Serial.println(Buffer);
-  //  Serial.println("\r\n");
-  //  // end PDP info
-
 
   mySendCmd("AT+SNPDPID=0\r\n");
  
@@ -185,69 +166,7 @@ bool DFRobot_SIM7000::attacthService(void)
 
    // this goes to http init
   
-  //ustalenie czasu 
-   mySendCmd("AT+CNTPCID=0\r\n");
- 
-   mySendCmd("AT+CNTP=\"pool.ntp.org\",-12,0,0\r\n");
-  
-   mySendCmd("AT+CNTP\r\n");
-  
-   //SSL
-   mySendCmd("AT+CACID=0\r\n");
-  
-   mySendCmd("AT+CSSLCFG=\"sslversion\",0,3\r\n");
- 
-   mySendCmd("AT+CASSLCFG=0,\"SSL\",1\r\n");
-  
-   mySendCmd("AT+CASSLCFG=0,\"CRINDEX\",0\r\n");
-  
-   mySendCmd("AT+CASSLCFG?\r\n");
-  
    return true;
- 
-   
-
-   
-    // // http conf
-    // mySendCmd("AT+SHCONF=\"URL\",\"https://172.205.129.224\"\r\n");
-
-    // mySendCmd("AT+SHCONF=\"BODYLEN\", 1024\r\n");
-    // mySendCmd("AT+SHCONF=\"HEADERLEN\", 256\r\n");
-    // mySendCmd("AT+SHCONN\r\n");
-
-
-  // //  set body for POST
-  // delay(2000);
-  // cleanBuffer(Buffer,200); //by�o 32
-  // sendCmd("AT+SHBOD=11,3000\r\n");
-  // delay(200);
-  // sendString("porzadki-56");
-  // delay(200);
-  // Serial.println("\r\n");
-  // delay(200);
-  // readBuffer(Buffer, 200); //by�o 32
-  // Serial.println(Buffer);
-  // Serial.println("\r\n");
-
-   
-  // sendCmd("AT+SHBOD?\r\n");
-  // cleanBuffer(Buffer,200); //by�o 32
-  // delay(500);
-  // readBuffer(Buffer, 200); //by�o 32
-  // Serial.println(Buffer);
-  // Serial.println("\r\n");
-
-  // //  make request (POST)
-  //  mySendCmd("AT+SHREQ=\"/\", 3\r\n");
-
-
-  //  mySendCmd("AT+SHSTATE\r\n");
-  //  mySendCmd("AT+SHREAD=0,100\r\n");
-  //  mySendCmd("AT+SHCONN\r\n");
-
-  //  while (1) {}
-
-  // return true;
 }
 
 int DFRobot_SIM7000::checkSignalQuality(void)
@@ -719,16 +638,37 @@ int DFRobot_SIM7000::batteryPower(void)
 
 bool DFRobot_SIM7000::myHttpInit(char *host)
 {
+  // set time
+  mySendCmd("AT+CNTPCID=0\r\n");
+  
+  mySendCmd("AT+CNTP=\"pool.ntp.org\",-12,0,0\r\n");
+  
+  mySendCmd("AT+CNTP\r\n");
+  
+  // SSL
+  mySendCmd("AT+CACID=0\r\n");
+  
+  mySendCmd("AT+CSSLCFG=\"sslversion\",0,3\r\n");
+  
+  mySendCmd("AT+CASSLCFG=0,\"SSL\",1\r\n");
+  
+  mySendCmd("AT+CASSLCFG=0,\"CRINDEX\",0\r\n");
+  
+  // check SSL
+  // mySendCmd("AT+CASSLCFG?\r\n");
 
 
+  
+  // configure http
   cleanBuffer(command, BUFSIZE);
-
   snprintf(command, BUFSIZE, "AT+SHCONF=\"URL\",\"%s\"\r\n", host);
   sendCmd(command);
   
   mySendCmd("AT+SHCONF=\"BODYLEN\", 1024\r\n");
   mySendCmd("AT+SHCONF=\"HEADERLEN\", 256\r\n");
-  mySendCmd("AT+SHCONF?\r\n, 50, 1", 1);
+
+  // check http conf
+  // mySendCmd("AT+SHCONF?\r\n, 50, 1", 1);
 
   return true;
 }
@@ -738,7 +678,7 @@ bool DFRobot_SIM7000::myPostRequest(char *host, char *data)
   cleanBuffer(buffer, BUFSIZE);
   cleanBuffer(command, BUFSIZE);
 
-  mySendCmd("AT+SHCONN\r\n", 10);
+  mySendCmd("AT+SHCONN\r\n", 5);
   delay(1000);
 
   int data_len = strlen(data);
@@ -747,34 +687,45 @@ bool DFRobot_SIM7000::myPostRequest(char *host, char *data)
 
   delay(200);
   sendCmd(command);
-  delay(1000);
+  delay(500);
   sendString(data);
-  delay(1500);
+  delay(500);
   
   cleanBuffer(buffer, BUFSIZE);
-  delay(300);
+  delay(200);
   readBuffer(buffer, BUFSIZE);
   Serial.println(buffer);
-  Serial.println("\r\n");
+  if (strstr(buffer, "OK") == NULL){
+    return false;
+  }
 
-   
-  cleanBuffer(buffer, BUFSIZE);
-  sendCmd("AT+SHBOD?\r\n");
-  delay(500);
-  readBuffer(buffer, 200); //by�o 32
-  Serial.println(buffer);
-  Serial.println("\r\n");
+  // check request body
+  // cleanBuffer(buffer, BUFSIZE);
+  // sendCmd("AT+SHBOD?\r\n");
+  // delay(500);
+  // readBuffer(buffer, BUFSIZE); //by�o 32
+  // Serial.println(buffer);
+  // Serial.println("\r\n");
+  // delay(100);
 
   //  make request (POST)
-  cleanBuffer(buffer, BUFSIZE);
-  sendCmd("AT+SHREQ=\"/\", 3\r\n");
-  delay(500);
-  readBuffer(buffer, 200); //by�o 32
-  Serial.println(buffer);
-  Serial.println("\r\n");
+  if(! mySendCmd("AT+SHREQ=\"/\", 3\r\n")) {
+    return false;
+  }
+
+  // read response --> doesn't work for some reason
+  // cleanBuffer(buffer, BUFSIZE);
+  // sendCmd("AT+SHREAD=0,100\r\n"); // the 100 should be something variable
+  // delay(BASE_DELAY);
+  // readBuffer(buffer, BUFSIZE);
+  // Serial.println(buffer);
+  // Serial.println("\r\n");
+  // delay(100);
 
 
-  mySendCmd("AT+SHDISC\r\n");
+  if (! mySendCmd("AT+SHDISC\r\n")) {
+    return false;
+  }
 
   return true;
 }
@@ -795,10 +746,12 @@ bool DFRobot_SIM7000::mySendCmd(char *cmd, int try_count = 3, int delay_ms = BAS
   
       if (NULL != strstr(buffer, "OK")) {
         Serial.println(buffer);
+        delay(delay_ms);
         return true;
       }
       if (NULL != strstr(buffer, "ERROR")) {
         Serial.println(buffer);
+        delay(delay_ms);
         break;
       }
 
