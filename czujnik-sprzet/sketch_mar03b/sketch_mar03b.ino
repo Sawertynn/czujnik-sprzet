@@ -114,12 +114,12 @@ void setup(){
 
   Serial.println("=== HTTP CONN + POST ===");
 
-  if (sim7000.myPostRequest(HOST, "L=1,R=234---")) {
+  if (sim7000.myPostRequest(HOST, "A=3456789_B=3456789_C=34567890")) {
     Serial.println("Success: request sent");
   }
   else
   {
-    Serial.println("Fail: could not send request");
+    Serial.println("Fail: post");
   }
 
 

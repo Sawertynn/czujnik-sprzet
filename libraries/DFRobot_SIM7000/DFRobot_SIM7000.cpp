@@ -670,12 +670,13 @@ bool DFRobot_SIM7000::myHttpInit(char *host)
   cleanBuffer(command, BUFSIZE);
   snprintf(command, BUFSIZE, "AT+SHCONF=\"URL\",\"%s\"\r\n", host);
   sendCmd(command);
-  
+  delay(100);
+
   mySendCmd("AT+SHCONF=\"BODYLEN\", 128\r\n");
   mySendCmd("AT+SHCONF=\"HEADERLEN\", 128\r\n");
 
   // check http conf
-  // mySendCmd("AT+SHCONF?\r\n, 50, 1", 1);
+  mySendCmd("AT+SHCONF?\r\n, 50, 1", 1);
 
   return true;
 }
@@ -691,7 +692,7 @@ bool DFRobot_SIM7000::myPostRequest(char *host, char *data)
   delay(1000);
 
   int data_len = strlen(data);
-  int data_timeout = 5000;
+  int data_timeout = 9000;
   snprintf(command, BUFSIZE, "AT+SHBOD=%d,%d\r\n", data_len, data_timeout);
 
   delay(200);
