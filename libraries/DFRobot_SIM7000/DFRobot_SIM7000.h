@@ -60,6 +60,8 @@ public:
   DFRobot_SIM7000(Stream *s);
   ~DFRobot_SIM7000(){};
 
+  bool xsend(char* command);
+
   /**
    * @fn recv
    * @brief Receive
@@ -102,7 +104,7 @@ public:
    * @retval true Success 
    * @retval false Failed
    */
-  bool attacthService(void);
+  bool attacthService(char* APN);
 
   /**
    * @fn setBaudRate

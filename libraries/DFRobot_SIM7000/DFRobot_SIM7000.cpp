@@ -13,6 +13,11 @@ DFRobot_SIM7000::DFRobot_SIM7000(Stream *s):DFRobot_SIMcore(s)
 	_s = s;
 }
 
+bool DFRobot_SIM7000::xsend(char* command) {
+  sendCmd(command);
+  return true;
+}
+
 bool DFRobot_SIM7000::setBaudRate(long rate)
 {
   int  count = 0;
@@ -109,7 +114,7 @@ bool DFRobot_SIM7000::setNetMode(eNet net)
     _mode_t=0;
   	if(checkSendCmd("AT+CNMP=38\r\n","OK")){
       delay(300);
-      if(checkSendCmd("AT+CMNB=3\r\n","OK")){ // 2 for NB-only, 3 for both
+      if(checkSendCmd("AT+CMNB2\r\n","OK")){ // 2 for NB-only, 3 for both
         return true;
       }else{
         return false;
@@ -121,7 +126,7 @@ bool DFRobot_SIM7000::setNetMode(eNet net)
     _mode_t=1;
     if(checkSendCmd("AT+CNMP=13\r\n","OK")){
       delay(300);
-      if(checkSendCmd("AT+CMNB=1\r\n","OK")){
+      if(checkSendCmd("AT+CMNB=1\r\n","OK")){ // 1 for gprs, 3 for both
         return true;
       }else{
         return false;
@@ -133,7 +138,8 @@ bool DFRobot_SIM7000::setNetMode(eNet net)
   return false;
 }
 
-bool DFRobot_SIM7000::attacthService(void)
+// #LTE
+bool DFRobot_SIM7000::attacthService(char* APN)
 {
   // suppress SMS messages bc they cause problems with commands <- does not work, sms goes through
   mySendCmd("AT+CNMI=0,0,0,0\r\n");
@@ -143,22 +149,43 @@ bool DFRobot_SIM7000::attacthService(void)
 
   delay(BASE_DELAY);
   
-  
+  // #LTE
   if (! mySendCmd("AT+CGATT=1\r\n"))
     return false;
 
   // define PDP context
-  mySendCmd("AT+CGDCONT=1,\"IP\",\"plus\"\r\n");
-  
+  cleanBuffer(command, BUFSIZE);
+  snprintf(command, BUFSIZE, "AT+CGDCONT=1,\"IP\",\"%s\"\r\n", APN);
+  mySendCmd(command);
+  // mySendCmd("AT+CGDCONT=1,\"IP\",\"iot.truphone.com\"\r\n");
+
+
 
   // PDP configure
-  mySendCmd("AT+CNCFG=0,1,\"plus\"\r\n");
+  cleanBuffer(command, BUFSIZE);
+  snprintf(command, BUFSIZE, "AT+CNCFG=0,1,\"%s\"\r\n", APN);
+  mySendCmd(command);
+  // mySendCmd("AT+CNCFG=0,1,\"iot.truphone.com\"\r\n");
 
   mySendCmd("AT+CGREG=0\r\n"); // was 1, this change should disable sms problems, i guess
 
   mySendCmd("AT+SNPDPID=0\r\n");
  
   mySendCmd("AT+CNACT=0,1\r\n");
+
+  //waiting for SMS ready
+
+  // cleanBuffer(buffer, BUFSIZE);
+  // while (true) {
+  //   readBuffer(buffer, BUFSIZE);
+  //   delay(500);
+  //   Serial.print(".");
+  //   Serial.println(buffer);
+  //   if (strstr(buffer, "SMS READY")) {
+  //     Serial.println(buffer);
+  //     break;
+  //   }
+  // }
   
    return true;
 }
@@ -681,13 +708,12 @@ bool DFRobot_SIM7000::myPostRequest(char *host, String data)
 {
   cleanBuffer(buffer, BUFSIZE);
   cleanBuffer(command, BUFSIZE);
-
-  if (!mySendCmd("AT+SHCONN\r\n", 5)) {
+  
+  if (!mySendCmd("AT+SHCONN\r\n", 3, 500)) {
     return false;
   }
-  delay(500);
 
-
+  
   //!TODO: setting body must be fixed
   int data_len = data.length();
   int data_timeout = 10000;
@@ -715,19 +741,18 @@ bool DFRobot_SIM7000::myPostRequest(char *host, String data)
   
   readBuffer(buffer, BUFSIZE);
   Serial.println(buffer);
-  if (strstr(buffer, "ERROR") != NULL){
-    mySendCmd("AT+SHDISC\r\n");
-    return false;
-  }
+  // if (strstr(buffer, "ERROR") != NULL){
+  //   return false;
+  // }
 
   // check request body
-  // cleanBuffer(buffer, BUFSIZE);
-  // sendCmd("AT+SHBOD?\r\n");
-  // delay(500);
-  // readBuffer(buffer, BUFSIZE); //by�o 32
-  // Serial.println(buffer);
-  // Serial.println("\r\n");
-  // delay(100);
+  cleanBuffer(buffer, BUFSIZE);
+  sendCmd("AT+SHBOD?\r\n");
+  delay(500);
+  readBuffer(buffer, BUFSIZE); //by�o 32
+  Serial.println(buffer);
+  Serial.println("\r\n");
+  delay(100);
 
   //  make request (POST)
   if(! mySendCmd("AT+SHREQ=\"/\", 3\r\n")) {
