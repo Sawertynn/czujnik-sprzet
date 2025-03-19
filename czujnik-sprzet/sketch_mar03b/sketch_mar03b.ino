@@ -186,14 +186,14 @@ return;
 }
 
 void loop() {
-    if (Serial.available()) {
-        String command = Serial.readStringUntil('\n'); // Odczytaj do nowej linii
-        mySerial.println(command); // Wyślij do SIM7070G
-    }
+  if (Serial.available()) {
+      String command = Serial.readStringUntil('\n'); // Odczytaj do nowej linii
+      mySerial.println(command); // Wyślij do SIM7070G
+  }
 
-        if (mySerial.available()) {
-        while (mySerial.available()) {
-            Serial.write(mySerial.read()); // Przekazuj dane znak po znaku
-        }
+  if (mySerial.available()) {
+    while (mySerial.available()) {
+        Serial.write(mySerial.read()); // Przekazuj dane znak po znaku
     }
+  }
 }

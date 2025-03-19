@@ -1,16 +1,26 @@
-2 files are important here:
-1. czujnik-sprzet/sketch_mar03b/sketch_mar03b
-- that's the main part
+Now we do it the other way:
 
-2. libraries/DFRobot_SIM700/DFRobot_SIM700.cpp
-- the 'AT+' commands are incompatible, so we had to rewrite them a bit
+we use A7670E
+
+Serial Communication:
+- init communication in 115200
+- send IPR=9600 to change speed
+- end communication in arduino and start with speed 9600
+
+Service attach
+- CREG=1
+- CXX
+- CXX
+
+SSL stuff
+(todo)
+
+HTTP stuff
 
 
-TODO list:
-- tidy up
-    - move code from `attachService` to appropriate functions
-    - modify those functions to fit the new AT commands
-    - 
-- SMS stuff
-- LTE stuff
-- MQTT stuff
+SMS:
+(classic init)
+- CSCS -> set to IRA
+- CSCA -> set to plus's number
+- CGMF -> set to TEXT
+- CGMS -> send SMS
