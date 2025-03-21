@@ -30,13 +30,13 @@
 //This URL is use for get data from tlink, please change the SENSORID to your sensorsId
 #define GETURL    "api.tlink.io/tlink_interface/api/device//getDataPoint_SENEORID.htm"
 
-SoftwareSerial     mySerial(PIN_RX,PIN_TX);
-DFRobot_SIM7000         sim7000(&mySerial);
+SoftwareSerial     simSerial(PIN_RX,PIN_TX);
+DFRobot_SIM7000         sim7000(&simSerial);
 
 void setup(){
   int signalStrength;
   Serial.begin(9600);
-  mySerial.begin(19200);
+  simSerial.begin(19200);
   Serial.println("Turn ON SIM7000......");
   if(sim7000.turnON()){                                    //Turn ON SIM7000
     Serial.println("Turn ON !");

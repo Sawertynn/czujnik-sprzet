@@ -60,7 +60,13 @@ public:
   DFRobot_SIM7000(Stream *s);
   ~DFRobot_SIM7000(){};
 
-  bool xsend(char* command);
+  // send command to SIM module
+  bool atSend(char* command);
+
+  // wait for needle to appear in buffer, or maximally for maxWait seconds
+  bool waitFor(char* needle, int maxWait);
+
+  bool changeBaudRate(int new_baud_rate);
 
   /**
    * @fn recv
@@ -355,8 +361,12 @@ bool setSSL(char *ntp_server, int time_zone);
  */
   bool myPostRequest(char* host, String data);
 
-private:
-  bool mySendCmd(char *cmd, int try_count = 3, int delay_ms = BASE_DELAY, int read_reps = 3);
+  bool setupSMS(char* serviceCentral);
+
+  bool sendSMS(char* target, String data);
+
+
+bool mySendCmd(char *cmd, char* check_str = "OK", int read_count = 10, int try_count = 3, int delay_ms = BASE_DELAY);
   
 private:
   char  _latitude[8];

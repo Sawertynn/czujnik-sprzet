@@ -13,8 +13,42 @@ DFRobot_SIM7000::DFRobot_SIM7000(Stream *s):DFRobot_SIMcore(s)
 	_s = s;
 }
 
-bool DFRobot_SIM7000::xsend(char* command) {
+bool DFRobot_SIM7000::atSend(char* command) {
   sendCmd(command);
+  return true;
+}
+
+bool DFRobot_SIM7000::waitFor(char *needle, int maxWait)
+{
+  int delay_ms = 200;
+  int periods = maxWait * 1000 / delay_ms;
+  cleanBuffer(buffer, BUFSIZE);
+  for (int i = 0; i < periods; i++) {
+    if (NULL != strstr(buffer, needle)) {
+      return true;
+    }
+    delay(delay_ms);
+    // Serial.print(".");
+  }
+  return true;
+}
+
+bool DFRobot_SIM7000::changeBaudRate(int new_baud_rate)
+{
+  cleanBuffer(command, BUFSIZE);
+  snprintf(command, BUFSIZE, "AT+IPR=%d\r\n", new_baud_rate);
+  for (int i = 0; i < 3; i++) {
+    sendCmd(command);
+    delay(50);
+  }
+  SoftwareSerial* serial = _s;
+  serial->end();
+  serial->begin(new_baud_rate);
+
+  if (!checkSendCmd("AT", "OK")) {
+    return false;
+  }
+
   return true;
 }
 
@@ -138,58 +172,41 @@ bool DFRobot_SIM7000::setNetMode(eNet net)
   return false;
 }
 
-// #LTE
+
 bool DFRobot_SIM7000::attacthService(char* APN)
 {
-  // suppress SMS messages bc they cause problems with commands <- does not work, sms goes through
-  mySendCmd("AT+CNMI=0,0,0,0\r\n");
-
-  // disable GNSS (GPS) bc it messes with networking
-  mySendCmd("AT+CGNSPWR=0\r\n");
-
-  delay(BASE_DELAY);
   
-  // #LTE
-  if (! mySendCmd("AT+CGATT=1\r\n"))
+  if (! mySendCmd("AT+CREG=1\r\n")) {
     return false;
+  }
+
+  if (! mySendCmd("AT+CGATT=1\r\n")) {
+    return false;
+  }
+
+  if (! mySendCmd("AT+CIPHEAD=0\r\n")) {
+    return false;
+  }
+
+  if (! mySendCmd("AT+CIPRXGET=1\r\n")) {
+    return false;
+  }
+
+  if (! mySendCmd("AT+CPIN?\r\n")) {
+    return false;
+  }
 
   // define PDP context
   cleanBuffer(command, BUFSIZE);
   snprintf(command, BUFSIZE, "AT+CGDCONT=1,\"IP\",\"%s\"\r\n", APN);
-  mySendCmd(command);
-  // mySendCmd("AT+CGDCONT=1,\"IP\",\"iot.truphone.com\"\r\n");
+  if (! mySendCmd(command)) {
+    return false;
+  }
 
-
-
-  // PDP configure
-  cleanBuffer(command, BUFSIZE);
-  snprintf(command, BUFSIZE, "AT+CNCFG=0,1,\"%s\"\r\n", APN);
-  mySendCmd(command);
-  // mySendCmd("AT+CNCFG=0,1,\"iot.truphone.com\"\r\n");
-
-  mySendCmd("AT+CGREG=0\r\n"); // was 1, this change should disable sms problems, i guess
-
-  mySendCmd("AT+SNPDPID=0\r\n");
- 
-  mySendCmd("AT+CNACT=0,1\r\n");
-
-  //waiting for SMS ready
-
-  // cleanBuffer(buffer, BUFSIZE);
-  // while (true) {
-  //   readBuffer(buffer, BUFSIZE);
-  //   delay(500);
-  //   Serial.print(".");
-  //   Serial.println(buffer);
-  //   if (strstr(buffer, "SMS READY")) {
-  //     Serial.println(buffer);
-  //     break;
-  //   }
-  // }
-  
-   return true;
+  return true;
 }
 
+//!TODO: fix check signal function
 int DFRobot_SIM7000::checkSignalQuality(void)
 {
   char  signalBuffer[26];
@@ -259,7 +276,7 @@ bool DFRobot_SIM7000::turnON(void)
   digitalWrite(12, HIGH);
   delay(1000);
   digitalWrite(12, LOW);
-  delay(7000);
+  delay(10000); // 10-second wait for A7670E
   if(checkSendCmd("AT\r\n", "OK", 100)){
     return true;
   }else{
@@ -474,77 +491,71 @@ bool DFRobot_SIM7000::httpInit(eNet net)
 
 bool DFRobot_SIM7000::httpConnect(const char *host)
 {
-    Serial.println("=== HTTP CONNECT ===");
-  Serial.println("\r\n");
-  // char buffer[BUFSIZE];
-  char command[BUFSIZE];
-
-  // cleanBuffer(buffer, BUFSIZE);
   cleanBuffer(command, BUFSIZE);
-
-  snprintf(command, BUFSIZE, "AT+SHCONF=\"URL\",\"%s\"\r\n", host);
-  mySendCmd(command);
-  
-  mySendCmd("AT+SHCONF=\"BODYLEN\", 1024\r\n");
-  mySendCmd("AT+SHCONF=\"HEADERLEN\", 256\r\n");
-  mySendCmd("AT+SHCONN\r\n");
-  return true;
-  // httpDisconnect();
-  // delay(1000);
-  // if(!checkSendCmd("AT+HTTPINIT\r\n","OK")){
-  //   return false;
-  // }
-  // if(!checkSendCmd("AT+HTTPPARA=\"CID\",\"1\"\r\n","OK")){
-  //   return false;
-  // }
+  delay(200);
+  if(!mySendCmd("AT+HTTPINIT\r\n","OK")){
+    Serial.println("could not init http"); //!debug
+    return false;
+  }
+  snprintf(command, BUFSIZE, "AT+HTTPPARA=\"URL\",\"%s\"\r\n", host);
   // sendCmd("AT+HTTPPARA=\"URL\",\"");
   // sendCmd(host);
   // if(!checkSendCmd("\"\r\n","OK")){
-  //   return false;
-  // }
-  // return true;
+  if (! mySendCmd(command, "OK")) {
+    Serial.println("could not set url"); //!debug
+    return false;
+  }
+  return true;
 }
 
 bool DFRobot_SIM7000::httpPost(const char *host , String data)
 {
+  int timeout = 4000;
+  cleanBuffer(buffer, BUFSIZE);
+  cleanBuffer(command, BUFSIZE);
+
+  snprintf(command, BUFSIZE, "AT+HTTPDATA=%d,%d\r\n", data.length(), timeout);
     
-  // if(!httpConnect(host)){
-  //   return false;
-  // }
-  // char resp[40];
-  // sendCmd("AT+HTTPDATA=");
-  // itoa(data.length(), resp, 10);
-  // sendString(resp);
-    
-  // if(!checkSendCmd(",4000\r\n","DOWNLOAD",5)){
-  //   return false;
-  // }
-  // delay(500);
+  if(!mySendCmd(command, "DOWNLOAD")){
+    Serial.println("stuck on download");
+    return false;
+  }
+  Serial.println("getting text");
+  delay(500);
   // DBG(data.c_str());
-  // sendString(data.c_str());
+  sendString(data.c_str());
+
+  delay(500);
   
-  // while(1){
-  //   readBuffer(resp,20);
-  //   if(NULL != strstr(resp,"OK")){
-  //     break;
-  //   }
-  //   if(NULL != strstr(resp,"ERROR")){
-  //     return false;
-  //   }
-  // }
-  // sendCmd("AT+HTTPACTION=1\r\n");
-  // while(1){
-  //   readBuffer(resp,40);
-  //   if(NULL != strstr(resp,"200")){
-  //     break;
-  //   }
-  //   if(NULL != strstr(resp,"601")){
-  //     return false;
-  //   }
-  // }
-  // //delay(11000);
+  int i = 0;
+  for (i = 0; i < 20; i++) {
+    readBuffer(buffer,BUFSIZE);
+    if(NULL != strstr(buffer,"OK")){
+      break;
+    }
+    if(NULL != strstr(buffer,"ERROR")){
+      Serial.println("could not get data");
+      return false;
+    }
+    Serial.print(".");
+    delay(50);
+  }
+  if (i == 20) {
+    Serial.println("\r\n supposedly it couldnt get text");
+  }
+  delay(50);
+  sendCmd("AT+HTTPACTION=1\r\n");
+  while(1){
+    readBuffer(buffer,BUFSIZE);
+    if(NULL != strstr(buffer,"200")){
+      break;
+    }
+    if(NULL != strstr(buffer,"601")){
+      return false;
+    }
+  }
   // sendCmd("AT+HTTPREAD\r\n");
-	// return true;
+	return true;
 }
 
 void DFRobot_SIM7000::httpGet(const char *host)
@@ -660,7 +671,7 @@ int DFRobot_SIM7000::batteryPower(void)
 bool DFRobot_SIM7000::setSSL(char *ntp_server, int time_zone_full_hours)
 {
   // set time
-  mySendCmd("AT+CNTPCID=0\r\n");
+  // mySendCmd("AT+CNTPCID=0\r\n"); // not in a7670
 
   cleanBuffer(command, BUFSIZE);
   // int time_zone_quarters = -12;
@@ -668,16 +679,16 @@ bool DFRobot_SIM7000::setSSL(char *ntp_server, int time_zone_full_hours)
   snprintf(command, BUFSIZE, "AT+CNTP=\"%s\",%d,0,0\r\n", ntp_server, time_zone_quarters);
   mySendCmd(command);
   
-  mySendCmd("AT+CNTP\r\n");
+  mySendCmd("AT+CNTP\r\n", "+CNTP", 20);
   
   // SSL
-  mySendCmd("AT+CACID=0\r\n");
+  // mySendCmd("AT+CACID=0\r\n"); // not in a7670
   
   mySendCmd("AT+CSSLCFG=\"sslversion\",0,3\r\n");
   
-  mySendCmd("AT+CASSLCFG=0,\"SSL\",1\r\n");
+  // mySendCmd("AT+CASSLCFG=0,\"SSL\",1\r\n");
   
-  mySendCmd("AT+CASSLCFG=0,\"CRINDEX\",0\r\n");
+  // mySendCmd("AT+CASSLCFG=0,\"CRINDEX\",0\r\n");
   
   // check SSL
   // mySendCmd("AT+CASSLCFG?\r\n");
@@ -699,7 +710,7 @@ bool DFRobot_SIM7000::myHttpInit(char *host)
   mySendCmd("AT+SHCONF=\"HEADERLEN\", 128\r\n");
 
   // check http conf
-  mySendCmd("AT+SHCONF?\r\n, 50, 1", 1);
+  // mySendCmd("AT+SHCONF?\r\n, 50, 1", 1);
 
   return true;
 }
@@ -709,7 +720,7 @@ bool DFRobot_SIM7000::myPostRequest(char *host, String data)
   cleanBuffer(buffer, BUFSIZE);
   cleanBuffer(command, BUFSIZE);
   
-  if (!mySendCmd("AT+SHCONN\r\n", 3, 500)) {
+  if (!mySendCmd("AT+SHCONN\r\n")) {
     return false;
   }
 
@@ -777,7 +788,47 @@ bool DFRobot_SIM7000::myPostRequest(char *host, String data)
   return true;
 }
 
-bool DFRobot_SIM7000::mySendCmd(char *cmd, int try_count = 3, int delay_ms = BASE_DELAY, int read_reps = 3)
+bool DFRobot_SIM7000::setupSMS(char *serviceCentral)
+{
+  cleanBuffer(command, BUFSIZE);
+  // switch character set to IRA because others do not work
+  if (!mySendCmd("AT+CSCS=\"IRA\"\r\n")) {
+    return false;
+  }
+
+  // set the service central
+  snprintf(command, BUFSIZE, "AT+CSCA=\"%s\"\r\n", serviceCentral);
+  if (!mySendCmd(command)) {
+    return false;
+  }
+
+  // set to TEXT mode bc PDU does not work
+  if (!mySendCmd("AT+CMGF=1\r\n")) {
+    false;
+  }
+
+  return true;
+}
+
+bool DFRobot_SIM7000::sendSMS(char *target, String data)
+{
+  cleanBuffer(buffer, BUFSIZE);
+  sendCmd("AT+CMGS=");
+  sendCmd(target);
+  sendCmd("\r\n");
+  delay(100);
+  readBuffer(buffer, BUFSIZE);
+  Serial.println(buffer);
+  delay(100);
+  sendString(data.c_str());
+  sendString("\032");
+  delay(100);
+  readBuffer(buffer, BUFSIZE);
+  Serial.println(BUFSIZE);
+  return true;
+}
+
+bool DFRobot_SIM7000::mySendCmd(char *cmd, char* check_str = "OK", int read_count = 10, int try_count = 3, int delay_ms = BASE_DELAY)
 {  
 
   cleanBuffer(buffer, BUFSIZE);
@@ -787,11 +838,11 @@ bool DFRobot_SIM7000::mySendCmd(char *cmd, int try_count = 3, int delay_ms = BAS
     sendCmd(cmd);
     delay(delay_ms);
 
-    for (int i = 0; i < read_reps; i++) {
+    for (int i = 0; i < read_count; i++) {
       readBuffer(buffer, BUFSIZE);
       // delay(delay_ms);
   
-      if (NULL != strstr(buffer, "OK")) {
+      if (NULL != strstr(buffer, check_str)) {
         Serial.println(buffer);
         delay(delay_ms);
         return true;

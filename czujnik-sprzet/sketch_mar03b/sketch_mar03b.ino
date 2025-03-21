@@ -25,47 +25,45 @@
 #define sensorsId "SENSOR ID" //sensor ID
 #define value     "VALUE"
 
-#define HOST      "https://172.205.129.224"
+#define HOST      "http://172.205.129.224"
+// #define HOST      "https://172.205.129.224"
 #define NTP_SERVER "pool.ntp.org"
 #define TIME_ZONE 1
 
-// #define APN "iot.truphone.com"
 #define APN "plus"
+#define SMS_CENTRAL_SERVICE "+48601100601"
+#define SMS_TARGET "NOT_SET_FOR_NOW"
+#define SMS_MODE 1
 
-SoftwareSerial     mySerial(PIN_RX,PIN_TX);
-DFRobot_SIM7000         sim7000(&mySerial);
+SoftwareSerial     simSerial(PIN_RX,PIN_TX);
+DFRobot_SIM7000         sim7000(&simSerial);
   
 
 void setup(){
   int signalStrength;
   bool ret;
+
+
+  // END TEMPORAL
+
   Serial.begin(9600);
-  mySerial.begin(115200);
+  simSerial.begin(115200);
 
-  // Serial.println("Turn ON SIM7000......");
-  // if(sim7000.turnON()){                                    //Turn ON SIM7000
-  //   Serial.println("Turn ON !");
-  // }
-
-
-  // Serial.println("Set baud rate......");
-  // while(1){
-  //   if(sim7000.setBaudRate(9600)){                      //Set SIM7000 baud rate from 115200 to 19200, reduce the baud rate to avoid distortion
-  //     Serial.println("Set baud rate:9600");
-  //     break;
-  //   }else{
-  //     Serial.println("Failed to set baud rate");
-  //     delay(1100);
-  //   }
-  // }
-  for (int i = 0; i < 3; i++) {
-    sim7000.xsend("AT+IPR=9600\r\n");
-    delay(100);
+  Serial.println("Turn ON SIM7000......");
+  if(sim7000.turnON()){                                    //Turn ON SIM7000
+    Serial.println("Turn ON !");
   }
-  mySerial.end();
-  mySerial.begin(9600);
-  Serial.println("start write");
-return;
+
+  // switch baud raute from high to low
+  sim7000.changeBaudRate(9600);
+  // for (int i = 0; i < 3; i++) {
+  //   sim7000.atSend("AT+IPR=9600\r\n");
+  //   delay(100);
+  // }
+  // simSerial.end();
+  // simSerial.begin(9600);
+
+
   Serial.println("Check SIM card......");
   if(sim7000.checkSIMStatus()){                            //Check SIM card
     Serial.println("SIM card READY");
@@ -74,24 +72,24 @@ return;
     while(1);
   }
 
+  // wait for 'PB DONE' message
+  sim7000.waitFor("PB DONE", 10);
 
+  // Serial.println("Set net mode......");
+  // while(1){
+  //   if(sim7000.setNetMode(sim7000.eGPRS)){                        //Set net mod GPRS
+  //     Serial.println("Set GPRS mode");
+  //     break;
+  //   }else{
+  //     Serial.println("Fail to set mode");
+  //     delay(1000);
+  //   }
+  // }
 
-  
-
-  Serial.println("Set net mode......");
-  while(1){
-    if(sim7000.setNetMode(sim7000.eGPRS)){                        //Set net mod GPRS
-      Serial.println("Set GPRS mode");
-      break;
-    }else{
-      Serial.println("Fail to set mode");
-      delay(1000);
-    }
-  }
 
   Serial.println("Get signal quality......");
   delay(1500);
-  signalStrength=sim7000.checkSignalQuality();             //C  heck signal quality from (0-30)
+  signalStrength=sim7000.checkSignalQuality();             //Check signal quality from (0-30)
   Serial.print("signalStrength =");
   Serial.println(signalStrength);
   delay(500);
@@ -107,31 +105,74 @@ return;
     Serial.println("Fail: Attaching service");
   }
 
-  Serial.println("=== SET SSL ===");
-  if (sim7000.setSSL(NTP_SERVER, TIME_ZONE))
-  {
-    Serial.println("Success: set SSL");
+  if (SMS_MODE) {
+    sim7000.setupSMS(SMS_CENTRAL_SERVICE);
+
+    String text = "sms from program";
+    sim7000.sendSMS(SMS_TARGET, text);
+  }
+
+
+
+  //   Serial.println("=== SET SSL ===");
+  // if (sim7000.setSSL(NTP_SERVER, TIME_ZONE))
+  // {
+  //   Serial.println("Success: set SSL");
+  // }
+  // else 
+  // {
+  //   Serial.println("Fail: set SSL");
+  // }
+
+  Serial.println("=== http connect ====");
+  if (sim7000.httpConnect(HOST)) {
+    Serial.println("Connected to host");
   }
   else 
   {
-    Serial.println("Fail: set SSL");
+    Serial.println("Failed to connect");
   }
 
-
-
-  Serial.println("=== HTTP INIT ===");
-
-  if (sim7000.myHttpInit(HOST))
-  {
-    Serial.println("Success: http init");
+  Serial.println("=== http POST request ===");
+  String postData = "dalej dalej wiadomosc gadzeta";
+  if (sim7000.httpPost(HOST, postData)) {
+    Serial.println("message sent!");
   }
   else
   {
-    Serial.println("Fail: http init");
+    Serial.println("failed to send");
   }
+  sim7000.httpDisconnect();
 
 
-  Serial.println("=== HTTP CONN POST ===");
+  return;
+  // OLD METHOD FOR SIM7070G
+
+  // Serial.println("=== SET SSL ===");
+  // if (sim7000.setSSL(NTP_SERVER, TIME_ZONE))
+  // {
+  //   Serial.println("Success: set SSL");
+  // }
+  // else 
+  // {
+  //   Serial.println("Fail: set SSL");
+  // }
+
+
+
+  // Serial.println("=== HTTP INIT ===");
+
+  // if (sim7000.myHttpInit(HOST))
+  // {
+  //   Serial.println("Success: http init");
+  // }
+  // else
+  // {
+  //   Serial.println("Fail: http init");
+  // }
+
+
+  // Serial.println("=== HTTP CONN POST ===");
 
   // String httpbuff;
   // httpbuff += "{\"deviceNo\":\"";                          //{
@@ -143,16 +184,16 @@ return;
   // httpbuff += "\"}]}";                                     //}
 
   // ret = sim7000.myPostRequest(HOST, httpbuff);
-  ret = sim7000.myPostRequest(HOST, "A=3456789_B=3456789_C=3456789_D=3456789_E=3456789_F=34567890");
-  if (ret) {
-    Serial.println("Success: request sent");
-  }
-  else
-  {
-    Serial.println("Fail: post");
-  }
+  // ret = sim7000.myPostRequest(HOST, "A=3456789_B=3456789_C=3456789_D=3456789_E=3456789_F=34567890");
+  // if (ret) {
+  //   Serial.println("Success: request sent");
+  // }
+  // else
+  // {
+  //   Serial.println("Fail: post");
+  // }
 
-  Serial.println("### end of setup, start typing ###");
+  // Serial.println("### end of setup, start typing ###");
 
   // MICHAŁOWY POST
   // Serial.print("POST to ");
@@ -188,12 +229,12 @@ return;
 void loop() {
   if (Serial.available()) {
       String command = Serial.readStringUntil('\n'); // Odczytaj do nowej linii
-      mySerial.println(command); // Wyślij do SIM7070G
+      simSerial.println(command); // Wyślij do SIM7070G
   }
 
-  if (mySerial.available()) {
-    while (mySerial.available()) {
-        Serial.write(mySerial.read()); // Przekazuj dane znak po znaku
+  if (simSerial.available()) {
+    while (simSerial.available()) {
+        Serial.write(simSerial.read()); // Przekazuj dane znak po znaku
     }
   }
 }

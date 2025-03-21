@@ -20,12 +20,12 @@
 
 #define PIN_TX     7
 #define PIN_RX     8
-SoftwareSerial     mySerial(PIN_RX,PIN_TX);
-DFRobot_SIM7000    sim7000(&mySerial);
+SoftwareSerial     simSerial(PIN_RX,PIN_TX);
+DFRobot_SIM7000    sim7000(&simSerial);
 
 void setup(){
   Serial.begin(9600);
-  mySerial.begin(19200);
+  simSerial.begin(19200);
   Serial.println("Enter anything to get positioning ");
   char loge[10];
   readSerial(loge);

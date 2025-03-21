@@ -26,12 +26,12 @@
 
 #define PIN_TX     7
 #define PIN_RX     8
-SoftwareSerial     mySerial(PIN_RX,PIN_TX);
-DFRobot_SIM7000    sim7000(&mySerial);
+SoftwareSerial     simSerial(PIN_RX,PIN_TX);
+DFRobot_SIM7000    sim7000(&simSerial);
 
 void setup() {
   Serial.begin(9600);
-  mySerial.begin(19200);
+  simSerial.begin(19200);
   Serial.println("Turn ON SIM7000......");
   if(sim7000.turnON()){                             //Turn ON SIM7000
     Serial.println("Turn ON !");
@@ -47,18 +47,18 @@ void setup() {
         delay(1000);
       }
   }
-  mySerial.begin(19200);
+  simSerial.begin(19200);
   Serial.println("For example, if you type AT\\r\\n, OK\\r\\n will be responsed!");
   Serial.println("Enter your AT command :");
 }
 
 void loop() {
-  mySerial.listen();
-  while(mySerial.available()){
-    Serial.write(mySerial.read());
+  simSerial.listen();
+  while(simSerial.available()){
+    Serial.write(simSerial.read());
   }
-  mySerial.flush();
+  simSerial.flush();
   while(Serial.available()){
-    mySerial.write(Serial.read());
+    simSerial.write(Serial.read());
   }
 }
