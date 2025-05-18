@@ -1,9 +1,21 @@
-# Instrukcja
-metody (funkcje) klasy DFRobot_SIM7000 (zmienna sim7000):
+# Instrukcja programowania
+## Załączony przykład
+Na początku `#define MODE_XXX T` do ustawiania jaką komunikację chcemy T=1 włączamy, T=0 wyłączamy
+
+Po przejściu przez kod w setup() włącza się tryb interaktywny do bezpośredniego wprowadzaia poleceń z klawiatury.
+
+## Metody (funkcje) klasy DFRobot_SIM7000 (zmienna sim7000):
+
+Wspólne dla wszystkich trybów, na start:
 - turnOn()
+- changeBaudRate(9600);
+    - zmiana zegara do komunikacji między ardu i a76xx, lepiej zmieniać ale nie ma dużej różnicy
 - checkSIMStatus()
+    - czy jest SIM
 - checkSignal()
+    - zwraca siłę sygnału
 - attachService(APN)
+    - podłączenie się do APN
 
 SMS:
 - setupSMS(SMS_CENTRAL_SERVICE)
@@ -11,6 +23,8 @@ SMS:
 
 SSL:
 - setupSSL(NTP_SERVER, TIME_ZONE)
+    - serwer ntp, generalnie "pool.ntp.org"
+    - time_zone - strefa czasowa w przesuniętych godzinach (-1, +2) - trzeba uwzględnić czas letni
 
 HTTP(S):
 - httpConnect(host)
@@ -21,15 +35,26 @@ HTTP(S):
 
 MQTT:
 
+- mqttInit(client_id, use_ssl = true)
+    - client_id - id klienta
+    - use_ssl - czy korzystać z ssl czy nie, domyślnie tak
+- mqttConnect(broker_addr, login = "", password = "")
+    - broker_addr - adres brokera MQTT, postaci "tcp://nazwa.domena:port" - tcp i port są konieczne
+    - login, password - dane uwierz., bez podania łączy się bez uwierzytelnienia
+- mqttPublish(String topic, String payload)
+    - topic - temat
+    - payload - dane
+- mqttDisconnect()
+    - odłączenie się od brokera MQTT
+
 
 # !TODO
-- ssl
-- mqtt
-- checksignal
 - clean up code
+- mqtt dics
 
 
-# Overview
+# Notes
+## Overview
 Now we do it the other way:
 
 we use A7670E
@@ -60,26 +85,3 @@ SMS:
 - CSCA -> set to plus's number
 - CGMF -> set to TEXT
 - CGMS -> send SMS
-
-
-# Manual/Instrukcja programowania w Arduino IDE
-Przed setup()
-- ustawić stałe
-
-setup()
-- włączyć komunikację szeregową
-- turn_on
-- change_baud_rate()
-- waitFor("PB DONE", 10)
-- check sim card()
-- check signal 
-- attachService()
-
-setup() for SMS
-- setupSMS()
-- sendSMS()
-
-setup() for HTTP(S) POST
-- httpConnect()
-- httpPost()
-- httpDisconnect()

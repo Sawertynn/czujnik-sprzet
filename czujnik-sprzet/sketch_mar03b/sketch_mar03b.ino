@@ -33,9 +33,9 @@
 #define value     "VALUE"
 #define CLIENT_ID "client_id"
 
-// #define HOST "https://httpbin.org/post"
-// #define HOST "https://srv84554.seohost.com.pl"
-#define HOST "https://eo87jvr1yccmec5.m.pipedream.net"
+// #define HOST "https://httpbin.org/post" // only for testing from module's side
+// #define HOST "https://srv84554.seohost.com.pl" // normal website, does not work now
+#define HOST "https://eo87jvr1yccmec5.m.pipedream.net" // pipedream, this works now
 
 #define APN "plus"
 #define NTP_SERVER "pool.ntp.org"
@@ -47,11 +47,10 @@
 
 #define MQTT_TOPIC "test"
 
-
 #define SMS_CENTRAL_SERVICE "+48601100601" // for plus
 #define SMS_TARGET "provide_number"
 
-#define BROKER_BASIC "tcp://broker.hivemq.com:1883"
+#define BROKER_BASIC "tcp://broker.hivemq.com:1883" // only for testing from module's side, no SSL
 
 SoftwareSerial     simSerial(PIN_RX,PIN_TX);
 DFRobot_SIM7000         sim7000(&simSerial);
@@ -59,7 +58,9 @@ DFRobot_SIM7000         sim7000(&simSerial);
 
 void setup(){
   int signalStrength;
-  bool ret;
+
+  String jsonData = "{\"name\": \"czujnik\", \"message\":\"wiadomosc\"}";
+  String plainData = "name: czujnik, message: wiadomosc";
 
   Serial.begin(9600);
   simSerial.begin(115200);
@@ -108,8 +109,7 @@ void setup(){
     Serial.println("=== SMS ===");
     sim7000.setupSMS(SMS_CENTRAL_SERVICE);
 
-    String text = "sms from arduino";
-    sim7000.sendSMS(SMS_TARGET, text);
+    sim7000.sendSMS(SMS_TARGET, plainData);
   } // SMS
 
   if (MODE_SSL) {
@@ -136,14 +136,14 @@ void setup(){
       return false;
     }    
 
-    if (!sim7000.mqttPublish(MQTT_TOPIC, "mqtt from czujnik")) {
+    if (!sim7000.mqttPublish(MQTT_TOPIC, plainData)) {
       return false;
     }
 
     if (!sim7000.mqttDisconnect()) {
       return false;
     }  
-  }
+  } // MQTT
 
   if (MODE_HTTP)
   {
@@ -159,9 +159,8 @@ void setup(){
 
     Serial.println("=== http POST request ===");
     
-    // String postData = "{"name": "czujnik", "message":"wiadomosc"}";
-    String postData = "{\"name\": \"czujnik\", \"message\":\"wiadomosc\"}";
-    if (sim7000.httpPost(HOST, postData, 1000)) {
+    
+    if (sim7000.httpPost(HOST, jsonData, 1000)) {
       Serial.println("message sent!");
     }
     else
