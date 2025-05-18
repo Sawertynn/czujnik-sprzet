@@ -1,7 +1,7 @@
 #include <DFRobot_SIM7000.h>
 #include <stdio.h>
 
-constexpr int BUFSIZE = 64;
+constexpr int BUFSIZE = 120;
 constexpr int TRY_COUNT = 3;
 char buffer[BUFSIZE];
 char command[BUFSIZE];
@@ -598,7 +598,7 @@ bool DFRobot_SIM7000::send(char *buf, size_t len)
 //   }
 // }
 
-bool mqttInit(String client_id, bool use_ssl = false)
+bool DFRobot_SIM7000::mqttInit(String client_id, bool use_ssl = false)
 {
   if (!mySendCmd("AT+CMQTTSTART\r\n")) {
     return false;
@@ -607,7 +607,8 @@ bool mqttInit(String client_id, bool use_ssl = false)
   cleanBuffer(command, BUFSIZE);
 
   if (!use_ssl) {
-    snprintf(command, BUFSIZE, "AT+CMQTTACCQ=0,\"%s\"\r\n", client_id.c_str());
+    _mqtt_ssl = 0;
+    snprintf(command, BUFSIZE, "AT+CMQTTACCQ=0,\"%s\",0\r\n", client_id.c_str());
     if (!mySendCmd(command)) {
       return false;
     }
@@ -615,6 +616,7 @@ bool mqttInit(String client_id, bool use_ssl = false)
   }
 
   // use ssl
+  _mqtt_ssl = 1;
   snprintf(command, BUFSIZE, "AT+CMQTTACCQ=0,\"%s\", 1\r\n", client_id.c_str());
   if (!mySendCmd(command)) {
     return false;
@@ -623,31 +625,92 @@ bool mqttInit(String client_id, bool use_ssl = false)
   if (!mySendCmd("AT+CMQTTSSLCFG=0,0\r\n")) {
     return false;
   }
+
+  if (!mySendCmd("AT+CSSLCFG=\"enableSNI\",0,1\r\n")) {
+    return false;
+  }
+
   return true;
 }
 
-bool mqttConnect(String broker_addr, String login = "", String password = "")
+bool DFRobot_SIM7000::mqttConnect(String broker_addr, String login = "", String password = "")
 {
   cleanBuffer(command, BUFSIZE);
   if (password == "") {
-    snprintf("AT+CMQTTCONNECT=0,\"%s\",60,1\r\n", broker_addr.c_str());
+    snprintf(command, BUFSIZE, "AT+CMQTTCONNECT=0,\"%s\",60,0\r\n", broker_addr.c_str());
   }
   else {
-    snprintf("AT+CMQTTCONNECT=0,\"%s\",60,1,\"%s\",\"%s\"\r\n", broker_addr.c_str(), login.c_str(), password.c_str());
+    snprintf(command, BUFSIZE, "AT+CMQTTCONNECT=0,\"%s\",60,1,\"%s\",\"%s\"\r\n", broker_addr.c_str(), login.c_str(), password.c_str());
   }
 
-  if(!mySendCmd(command)) {
+  if(!mySendCmd(command, "+CMQTTCONNECT: 0,0")) {
     return false;
   }
   return true;
 }
 
-bool mqttPublish(String topic, String payload)
+bool DFRobot_SIM7000::mqttPublish(String topic, String payload)
 {
+  int timeout = 4000;
+  int i = 0;
+  cleanBuffer(buffer, BUFSIZE);
+  cleanBuffer(command, BUFSIZE);
+
+  snprintf(command, BUFSIZE, "AT+CMQTTTOPIC=0,%d\r\n", topic.length());
+  checkSendCmd(command, ">");
+  delay(BASE_DELAY);
+  sendString(topic.c_str());
+  delay(BASE_DELAY);
+
+  for (i = 0; i < 20; i++)
+  {
+    readBuffer(buffer, BUFSIZE);
+    if (NULL != strstr(buffer, "OK"))
+    {
+      break;
+    }
+    if (NULL != strstr(buffer, "ERROR"))
+    {
+      Serial.println("could not get topic");
+      return false;
+    }
+    delay(50);
+  }
+
+  
+  cleanBuffer(buffer, BUFSIZE);
+  cleanBuffer(command, BUFSIZE);
+
+  snprintf(command, BUFSIZE, "AT+CMQTTPAYLOAD=0,%d\r\n", payload.length());
+  checkSendCmd(command, ">");
+  delay(BASE_DELAY);
+  sendString(payload.c_str());
+  delay(BASE_DELAY);
+
+  for (i = 0; i < 20; i++)
+  {
+    readBuffer(buffer, BUFSIZE);
+    if (NULL != strstr(buffer, "OK"))
+    {
+      break;
+    }
+    if (NULL != strstr(buffer, "ERROR"))
+    {
+      Serial.println("could not get payload");
+      return false;
+    }
+    delay(50);
+  }
+
+  if(!mySendCmd("AT+CMQTTPUB=0,1,60\r\n", "+CMQTTPUB: 0,0"))
+  {
+    return false;
+  }
+
   return true;
 }
 
-bool mqttDisconnect()
+bool DFRobot_SIM7000::mqttDisconnect()
 {
   
 }
@@ -901,6 +964,11 @@ bool DFRobot_SIM7000::setupSSL(char *ntp_server, int time_zone_full_hours)
   
   // DANGEROUS!! Disable server authentication
   // mySendCmd("AT+CSSLCFG=\"authmode\",0,0\r\n");
+
+  
+  if (!mySendCmd("AT+CSSLCFG=\"enableSNI\",0,1\r\n")) {
+    return false;
+  }
 
   mySendCmd("AT+CSSLCFG=0\r\n");
 

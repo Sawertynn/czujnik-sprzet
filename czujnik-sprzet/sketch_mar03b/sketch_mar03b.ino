@@ -19,10 +19,10 @@
 
 // #### SETMODE ####
 
-#define MODE_SSL  true
-#define MODE_HTTP true
-#define MODE_MQTT false
-#define MODE_SMS  false
+#define MODE_SSL  1
+#define MODE_HTTP 0
+#define MODE_MQTT 1
+#define MODE_SMS  0
 
 #define PIN_TX     7
 #define PIN_RX     8
@@ -31,26 +31,27 @@
 #define deviceNo  "DEVICE NO" //Device serial number
 #define sensorsId "SENSOR ID" //sensor ID
 #define value     "VALUE"
+#define CLIENT_ID "client_id"
 
 // #define HOST "https://httpbin.org/post"
-#define HOST "https://srv84554.seohost.com.pl"
-// #define HOST "https://eo87jvr1yccmec5.m.pipedream.net"
+// #define HOST "https://srv84554.seohost.com.pl"
+#define HOST "https://eo87jvr1yccmec5.m.pipedream.net"
 
 #define APN "plus"
 #define NTP_SERVER "pool.ntp.org"
 #define TIME_ZONE 2 // CEST+2:00
 
-#define MQTT_URL "1901da8e0be84355ae4f4294569f45e3.s1.eu.hivemq.cloud"
-#define MQTT_TLS_URL "1901da8e0be84355ae4f4294569f45e3.s1.eu.hivemq.cloud:8883"
-#define MQTT_PORT 8883
-#define MQTT_LOGIN "hivemq.remote"
+#define MQTT_TLS_URL "tcp://1901da8e0be84355ae4f4294569f45e3.s1.eu.hivemq.cloud:8883"
+#define MQTT_LOGIN "czujnik"
 #define MQTT_PASS "Password123"
 
-#define MQTT_FULL "tcp://9877acae137043d6ba8adea50ce969a9.s1.eu.hivemq.cloud:8883"
+#define MQTT_TOPIC "test"
 
 
 #define SMS_CENTRAL_SERVICE "+48601100601" // for plus
 #define SMS_TARGET "provide_number"
+
+#define BROKER_BASIC "tcp://broker.hivemq.com:1883"
 
 SoftwareSerial     simSerial(PIN_RX,PIN_TX);
 DFRobot_SIM7000         sim7000(&simSerial);
@@ -126,7 +127,23 @@ void setup(){
   if (MODE_MQTT)
   {
     Serial.println("=== MQTT ===");
-   
+
+    if (!sim7000.mqttInit(CLIENT_ID, MODE_SSL)) {
+      return false;
+    }
+
+    // if (!sim7000.mqttConnect(BROKER_BASIC)) {
+    if (!sim7000.mqttConnect(MQTT_TLS_URL, MQTT_LOGIN, MQTT_PASS)) {
+      return false;
+    }    
+
+    if (!sim7000.mqttPublish(MQTT_TOPIC, "mqtt from czujnik")) {
+      return false;
+    }
+
+    if (!sim7000.mqttDisconnect()) {
+      return false;
+    }  
   }
 
   if (MODE_HTTP)

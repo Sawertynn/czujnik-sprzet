@@ -248,9 +248,9 @@ public:
   //  */
   // bool mqttDisconnect(void);
 
-  bool mqttInit(String client_id, bool use_ssl);
+  bool mqttInit(String client_id, bool use_ssl = false);
 
-  bool mqttConnect(String broker_addr, String login, String password);
+  bool mqttConnect(String broker_addr, String login = "", String password = "");
 
   bool mqttPublish(String topic, String payload);
 
