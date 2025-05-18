@@ -17,6 +17,12 @@
 
 #include <DFRobot_SIM7000.h>
 
+// #### SETMODE ####
+
+#define MODE_HTTPS
+// #define MODE_SMS
+// #define MODE_MQTT
+
 #define PIN_TX     7
 #define PIN_RX     8
 
@@ -25,15 +31,25 @@
 #define sensorsId "SENSOR ID" //sensor ID
 #define value     "VALUE"
 
-#define HOST      "http://172.205.129.224"
-// #define HOST      "https://172.205.129.224"
+// #define HOST "https://httpbin.org/post"
+// #define HOST "https://srv84554.seohost.com.pl/"
+#define HOST "https://eojm9q58pn8j6g0.m.pipedream.net"
+
+#define MQTT_URL "1901da8e0be84355ae4f4294569f45e3.s1.eu.hivemq.cloud"
+#define MQTT_TLS_URL "1901da8e0be84355ae4f4294569f45e3.s1.eu.hivemq.cloud:8883"
+#define MQTT_PORT 8883
+#define MQTT_LOGIN "hivemq.remote"
+#define MQTT_PASS "Password123"
+
+#define MQTT_FULL "tcp://9877acae137043d6ba8adea50ce969a9.s1.eu.hivemq.cloud:8883"
+
 #define NTP_SERVER "pool.ntp.org"
-#define TIME_ZONE 1
+#define TIME_ZONE 2 // CEST+2:00
 
 #define APN "plus"
 #define SMS_CENTRAL_SERVICE "+48601100601"
-#define SMS_TARGET "NOT_SET_FOR_NOW"
-#define SMS_MODE 1
+#define SMS_TARGET "provide_number"
+#define SMS_MODE 0
 
 SoftwareSerial     simSerial(PIN_RX,PIN_TX);
 DFRobot_SIM7000         sim7000(&simSerial);
@@ -42,9 +58,6 @@ DFRobot_SIM7000         sim7000(&simSerial);
 void setup(){
   int signalStrength;
   bool ret;
-
-
-  // END TEMPORAL
 
   Serial.begin(9600);
   simSerial.begin(115200);
@@ -56,36 +69,24 @@ void setup(){
 
   // switch baud raute from high to low
   sim7000.changeBaudRate(9600);
-  // for (int i = 0; i < 3; i++) {
-  //   sim7000.atSend("AT+IPR=9600\r\n");
-  //   delay(100);
-  // }
-  // simSerial.end();
-  // simSerial.begin(9600);
+
+  // wait for 'PB DONE' message
+  // sim7000.waitFor("DONE", 90);
 
 
   Serial.println("Check SIM card......");
-  if(sim7000.checkSIMStatus()){                            //Check SIM card
-    Serial.println("SIM card READY");
-  }else{
-    Serial.println("SIM card ERROR");
-    while(1);
+  for (int i = 0; i < 3; i++) {
+    if (sim7000.checkSIMStatus()){
+      Serial.println("SIM card READY");
+      break;
+    }else{
+      Serial.println("SIM card ERROR");
+    }
+    if (i == 2) {
+      Serial.println("SIM card 3 tries ERROR");
+      return;
+    }
   }
-
-  // wait for 'PB DONE' message
-  sim7000.waitFor("PB DONE", 10);
-
-  // Serial.println("Set net mode......");
-  // while(1){
-  //   if(sim7000.setNetMode(sim7000.eGPRS)){                        //Set net mod GPRS
-  //     Serial.println("Set GPRS mode");
-  //     break;
-  //   }else{
-  //     Serial.println("Fail to set mode");
-  //     delay(1000);
-  //   }
-  // }
-
 
   Serial.println("Get signal quality......");
   delay(1500);
@@ -104,126 +105,70 @@ void setup(){
   {
     Serial.println("Fail: Attaching service");
   }
-
-  if (SMS_MODE) {
+  
+  #ifdef MODE_SMS
     sim7000.setupSMS(SMS_CENTRAL_SERVICE);
 
     String text = "sms from program";
     sim7000.sendSMS(SMS_TARGET, text);
-  }
+    return;
+  #endif // SMS
 
-
-
-  //   Serial.println("=== SET SSL ===");
-  // if (sim7000.setSSL(NTP_SERVER, TIME_ZONE))
-  // {
-  //   Serial.println("Success: set SSL");
-  // }
-  // else 
-  // {
-  //   Serial.println("Fail: set SSL");
-  // }
-
-  Serial.println("=== http connect ====");
-  if (sim7000.httpConnect(HOST)) {
-    Serial.println("Connected to host");
+  Serial.println("=== SET SSL ===");
+  if (sim7000.setupSSL(NTP_SERVER, TIME_ZONE))
+  {
+    Serial.println("Success: set SSL");
   }
   else 
   {
-    Serial.println("Failed to connect");
+    Serial.println("Fail: set SSL");
   }
 
-  Serial.println("=== http POST request ===");
-  String postData = "dalej dalej wiadomosc gadzeta";
-  if (sim7000.httpPost(HOST, postData)) {
-    Serial.println("message sent!");
-  }
-  else
-  {
-    Serial.println("failed to send");
-  }
-  sim7000.httpDisconnect();
+  #ifdef MODE_MQTT
+    Serial.println("=== MQTT ===");
+    return;
+    Serial.println("=== MQTT dfrobot===");
+    sim7000.mqttConnect(
+      "client1",
+      MQTT_LOGIN,
+      MQTT_PASS
+    );
+    sim7000.mqttPublish(
+      "test",
+      "czujnik"
+    );
+  #endif // MQTT
+
+  #ifdef MODE_HTTPS
+    Serial.println("=== http connect ====");
+    if (sim7000.httpConnect(HOST)) {
+      Serial.println("Connected to host");
+    }
+    else
+    {
+      Serial.println("Failed to connect");
+      return;
+    }
+
+    Serial.println("=== http POST request ===");
+    
+    // String postData = "{"name": "czujnik", "message":"wiadomosc"}";
+    String postData = "{\"name\": \"czujnik\", \"message\":\"wiadomosc\"}";
+    // if (sim7000.httpPost(HOST, postData)) {
+    if (sim7000.httpPost(HOST, postData, 1000)) {
+      Serial.println("message sent!");
+    }
+    else
+    {
+      Serial.println("failed to send");
+      return;
+    }
+    // uncomment for final version
+    // sim7000.httpDisconnect();
 
 
-  return;
-  // OLD METHOD FOR SIM7070G
-
-  // Serial.println("=== SET SSL ===");
-  // if (sim7000.setSSL(NTP_SERVER, TIME_ZONE))
-  // {
-  //   Serial.println("Success: set SSL");
-  // }
-  // else 
-  // {
-  //   Serial.println("Fail: set SSL");
-  // }
-
-
-
-  // Serial.println("=== HTTP INIT ===");
-
-  // if (sim7000.myHttpInit(HOST))
-  // {
-  //   Serial.println("Success: http init");
-  // }
-  // else
-  // {
-  //   Serial.println("Fail: http init");
-  // }
-
-
-  // Serial.println("=== HTTP CONN POST ===");
-
-  // String httpbuff;
-  // httpbuff += "{\"deviceNo\":\"";                          //{
-  // httpbuff += deviceNo;                                    //   "dueviceNo" : "DEVICE NO",
-  // httpbuff += "\",\"sensorDatas\":[{\"sensorsId\":";       //      "sensorDatas":[{
-  // httpbuff += sensorsId;                                   //          "sensorsId" :  SENSOR ID,
-  // httpbuff += ",\"value\":\"";                             //          "value"     : "  VALUE  "
-  // httpbuff += value;                                       //       }]
-  // httpbuff += "\"}]}";                                     //}
-
-  // ret = sim7000.myPostRequest(HOST, httpbuff);
-  // ret = sim7000.myPostRequest(HOST, "A=3456789_B=3456789_C=3456789_D=3456789_E=3456789_F=34567890");
-  // if (ret) {
-  //   Serial.println("Success: request sent");
-  // }
-  // else
-  // {
-  //   Serial.println("Fail: post");
-  // }
-
-  // Serial.println("### end of setup, start typing ###");
-
-  // MICHAŁOWY POST
-  // Serial.print("POST to ");
-  // Serial.println(POSTURL);
-  // String httpbuff;
-  // httpbuff += "{\"deviceNo\":\"";                          //{
-  // httpbuff += deviceNo;                                    //   "dueviceNo" : "DEVICE NO",
-  // httpbuff += "\",\"sensorDatas\":[{\"sensorsId\":";       //      "sensorDatas":[{
-  // httpbuff += sensorsId;                                   //          "sensorsId" :  SENSOR ID,
-  // httpbuff += ",\"value\":\"";                             //          "value"     : "  VALUE  "
-  // httpbuff += value;                                       //       }]
-  // httpbuff += "\"}]}";                                     //}
-  // while(1){
-  //   if(sim7000.httpPost(POSTURL,httpbuff)){              //HTTP POST
-  //     Serial.println("Post successed");
-  //     break;
-  //   }else{
-  //     Serial.println("Fail to post");
-  //   }
-  // }
-
-  // Serial.print("GET from ");
-  // Serial.println(GETURL);
-  // sim7000.httpGet(GETURL);                                 //HTTP GET
-  // Serial.println("Disconnect");
-  // sim7000.httpDisconnect();                                //Disconnect
-  // Serial.println("Close net work");
-  // sim7000.closeNetwork();                                  //Close network
-  // Serial.println("Turn off SIM7000");
-  // sim7000.turnOFF();                                       //Turn OFF SIM7000
+  #endif // HTTPS
+  Serial.println(">> Interactive mode <<");
 }
 
 void loop() {

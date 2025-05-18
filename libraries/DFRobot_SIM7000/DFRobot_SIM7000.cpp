@@ -7,13 +7,13 @@ char buffer[BUFSIZE];
 char command[BUFSIZE];
 // constexpr int BASE_DELAY = 100; // now in .h
 
-
-DFRobot_SIM7000::DFRobot_SIM7000(Stream *s):DFRobot_SIMcore(s)
+DFRobot_SIM7000::DFRobot_SIM7000(Stream *s) : DFRobot_SIMcore(s)
 {
-	_s = s;
+  _s = s;
 }
 
-bool DFRobot_SIM7000::atSend(char* command) {
+bool DFRobot_SIM7000::atSend(char *command)
+{
   sendCmd(command);
   return true;
 }
@@ -23,12 +23,15 @@ bool DFRobot_SIM7000::waitFor(char *needle, int maxWait)
   int delay_ms = 200;
   int periods = maxWait * 1000 / delay_ms;
   cleanBuffer(buffer, BUFSIZE);
-  for (int i = 0; i < periods; i++) {
-    if (NULL != strstr(buffer, needle)) {
+  for (int i = 0; i < periods; i++)
+  {
+    if (NULL != strstr(buffer, needle))
+    {
+      Serial.println("found needle, continuing...");
       return true;
     }
     delay(delay_ms);
-    // Serial.print(".");
+    Serial.print(".");
   }
   return true;
 }
@@ -37,15 +40,17 @@ bool DFRobot_SIM7000::changeBaudRate(int new_baud_rate)
 {
   cleanBuffer(command, BUFSIZE);
   snprintf(command, BUFSIZE, "AT+IPR=%d\r\n", new_baud_rate);
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 3; i++)
+  {
     sendCmd(command);
     delay(50);
   }
-  SoftwareSerial* serial = _s;
+  SoftwareSerial *serial = _s;
   serial->end();
   serial->begin(new_baud_rate);
 
-  if (!checkSendCmd("AT", "OK")) {
+  if (!checkSendCmd("AT", "OK"))
+  {
     return false;
   }
 
@@ -54,62 +59,94 @@ bool DFRobot_SIM7000::changeBaudRate(int new_baud_rate)
 
 bool DFRobot_SIM7000::setBaudRate(long rate)
 {
-  int  count = 0;
-  while(count <3){
-    if( rate  ==  1200){
-      if(checkSendCmd("AT+IPR=1200\r\n","OK")){
+  int count = 0;
+  while (count < 3)
+  {
+    if (rate == 1200)
+    {
+      if (checkSendCmd("AT+IPR=1200\r\n", "OK"))
+      {
         _baudrate = 1200;
         break;
-      }else{
+      }
+      else
+      {
         count++;
         delay(200);
       }
-    }else if(rate == 2400){
-      if(checkSendCmd("AT+IPR=2400\r\n","OK")){
+    }
+    else if (rate == 2400)
+    {
+      if (checkSendCmd("AT+IPR=2400\r\n", "OK"))
+      {
         _baudrate = 2400;
         break;
-      }else{
+      }
+      else
+      {
         count++;
         delay(200);
       }
-    }else if(rate == 4800){
-      if(checkSendCmd("AT+IPR=4800\r\n","OK")){
+    }
+    else if (rate == 4800)
+    {
+      if (checkSendCmd("AT+IPR=4800\r\n", "OK"))
+      {
         _baudrate = 4800;
         break;
-      }else{
+      }
+      else
+      {
         count++;
         delay(200);
       }
-    }else if(rate == 9600){
-      if(checkSendCmd("AT+IPR=9600\r\n","OK")){
+    }
+    else if (rate == 9600)
+    {
+      if (checkSendCmd("AT+IPR=9600\r\n", "OK"))
+      {
         _baudrate = 9600;
         break;
-      }else{
+      }
+      else
+      {
         count++;
         delay(200);
       }
-    }else if(rate == 19200){
-      if(checkSendCmd("AT+IPR=19200\r\n","OK")){
+    }
+    else if (rate == 19200)
+    {
+      if (checkSendCmd("AT+IPR=19200\r\n", "OK"))
+      {
         _baudrate = 19200;
         break;
-      }else{
+      }
+      else
+      {
         count++;
         delay(200);
       }
-    }else if(rate == 38400){
-      if(checkSendCmd("AT+IPR=38400\r\n","OK")){
+    }
+    else if (rate == 38400)
+    {
+      if (checkSendCmd("AT+IPR=38400\r\n", "OK"))
+      {
         _baudrate = 38400;
         break;
-      }else{
+      }
+      else
+      {
         count++;
         delay(200);
       }
-    }else{
+    }
+    else
+    {
       Serial.println("No such rate");
       return false;
     }
   }
-  if(count == 3)
+  if (count == 3)
     return false;
   return true;
 }
@@ -117,148 +154,192 @@ bool DFRobot_SIM7000::setBaudRate(long rate)
 bool DFRobot_SIM7000::checkSIMStatus(void)
 {
   int count = 0;
-  while(count < 3){
-    if(checkSendCmd("AT\r\n","OK")){
+  while (count < 3)
+  {
+    if (checkSendCmd("AT\r\n", "OK"))
+    {
       break;
-    }else{
+    }
+    else
+    {
       count++;
       delay(300);
     }
   }
-  if(count == 3){
+  if (count == 3)
+  {
     return false;
   }
   count = 0;
-  while(count < 3){
-    if(checkSendCmd("AT+CPIN?\r\n","READY")){
+  while (count < 3)
+  {
+    if (checkSendCmd("AT+CPIN?\r\n", "READY"))
+    {
       break;
-    }else{
+    }
+    else
+    {
       count++;
       delay(300);
     }
   }
-  if(count == 3)
+  if (count == 3)
     return false;
   return true;
 }
 
 bool DFRobot_SIM7000::setNetMode(eNet net)
 {
-  if(net == eNB){
-    _mode_t=0;
-  	if(checkSendCmd("AT+CNMP=38\r\n","OK")){
+  if (net == eNB)
+  {
+    _mode_t = 0;
+    if (checkSendCmd("AT+CNMP=38\r\n", "OK"))
+    {
       delay(300);
-      if(checkSendCmd("AT+CMNB2\r\n","OK")){ // 2 for NB-only, 3 for both
+      if (checkSendCmd("AT+CMNB2\r\n", "OK"))
+      { // 2 for NB-only, 3 for both
         return true;
-      }else{
+      }
+      else
+      {
         return false;
       }
-    }else{
+    }
+    else
+    {
       return false;
     }
-  }else if(net == eGPRS){
-    _mode_t=1;
-    if(checkSendCmd("AT+CNMP=13\r\n","OK")){
+  }
+  else if (net == eGPRS)
+  {
+    _mode_t = 1;
+    if (checkSendCmd("AT+CNMP=13\r\n", "OK"))
+    {
       delay(300);
-      if(checkSendCmd("AT+CMNB=1\r\n","OK")){ // 1 for gprs, 3 for both
+      if (checkSendCmd("AT+CMNB=1\r\n", "OK"))
+      { // 1 for gprs, 3 for both
         return true;
-      }else{
+      }
+      else
+      {
         return false;
       }
     }
-  }else{
+  }
+  else
+  {
     Serial.println("No such mode!");
   }
   return false;
 }
 
-
-bool DFRobot_SIM7000::attacthService(char* APN)
+bool DFRobot_SIM7000::attacthService(char *APN)
 {
-  
-  if (! mySendCmd("AT+CREG=1\r\n")) {
+
+  if (!mySendCmd("AT+CREG=1\r\n"))
+  {
     return false;
   }
 
-  if (! mySendCmd("AT+CGATT=1\r\n")) {
+  if (!mySendCmd("AT+CGATT=1\r\n"))
+  {
     return false;
   }
 
-  if (! mySendCmd("AT+CIPHEAD=0\r\n")) {
+  if (!mySendCmd("AT+CIPHEAD=0\r\n"))
+  {
     return false;
   }
 
-  if (! mySendCmd("AT+CIPRXGET=1\r\n")) {
+  if (!mySendCmd("AT+CIPRXGET=1\r\n"))
+  {
     return false;
   }
 
-  if (! mySendCmd("AT+CPIN?\r\n")) {
+  if (!mySendCmd("AT+CPIN?\r\n"))
+  {
     return false;
   }
 
   // define PDP context
   cleanBuffer(command, BUFSIZE);
   snprintf(command, BUFSIZE, "AT+CGDCONT=1,\"IP\",\"%s\"\r\n", APN);
-  if (! mySendCmd(command)) {
+  if (!mySendCmd(command))
+  {
     return false;
   }
 
   return true;
 }
 
-//!TODO: fix check signal function
+//! TODO: fix check signal function
 int DFRobot_SIM7000::checkSignalQuality(void)
 {
-  char  signalBuffer[26];
-  int i = 0,j = 0,k = 0;
+  char signalBuffer[26];
+  int i = 0, j = 0, k = 0;
   char *signalQuality;
-  cleanBuffer(signalBuffer,26);
+  cleanBuffer(signalBuffer, 26);
   sendCmd("AT+CSQ\r\n");
-  readBuffer(signalBuffer,26);
-  if(NULL != (signalQuality = strstr(signalBuffer, "+CSQ:"))){
+  readBuffer(signalBuffer, 26);
+  if (NULL != (signalQuality = strstr(signalBuffer, "+CSQ:")))
+  {
     i = *(signalQuality + 6) - 48;
     j = *(signalQuality + 7) - 48;
-    k =  (i * 10) + j;
-  }else{
+    k = (i * 10) + j;
+  }
+  else
+  {
     return 0;
   }
-  if( k == 99){
+  if (k == 99)
+  {
     return 0;
-  }else{
+  }
+  else
+  {
     return k;
   }
 }
 
-bool DFRobot_SIM7000::openNetwork(eProtocol ptl,const char *host, int port)
+bool DFRobot_SIM7000::openNetwork(eProtocol ptl, const char *host, int port)
 {
   char num[4];
   char resp[96];
-  if(ptl == eTCP){
+  if (ptl == eTCP)
+  {
     sendCmd("AT+CIPSTART=\"TCP\",\"");
     sendCmd(host);
     sendCmd("\",");
     itoa(port, num, 10);
     sendCmd(num);
     sendCmd("\r\n");
-  }else if(ptl == eUDP){
+  }
+  else if (ptl == eUDP)
+  {
     sendCmd("AT+CIPSTART=\"UDP\",\"");
     sendCmd(host);
     sendCmd("\",");
     itoa(port, num, 10);
     sendCmd(num);
     sendCmd("\r\n");
-  }else{
+  }
+  else
+  {
     Serial.println("No such mode!");
     return false;
   }
-  while(1){
-    while(checkReadable()){
+  while (1)
+  {
+    while (checkReadable())
+    {
       cleanBuffer(resp, 96);
       readBuffer(resp, 96);
-      if(NULL != strstr(resp,"CONNECT OK")){
+      if (NULL != strstr(resp, "CONNECT OK"))
+      {
         return true;
       }
-      if(NULL != strstr(resp,"ERROR")){//
+      if (NULL != strstr(resp, "ERROR"))
+      { //
         return false;
       }
     }
@@ -267,8 +348,9 @@ bool DFRobot_SIM7000::openNetwork(eProtocol ptl,const char *host, int port)
 
 bool DFRobot_SIM7000::turnON(void)
 {
-  pinMode(12,OUTPUT);
-  if(checkSendCmd("AT\r\n", "OK", 100)){
+  pinMode(12, OUTPUT);
+  if (checkSendCmd("AT\r\n", "OK", 100))
+  {
     sendCmd("AT+CPOWD=1\r\n");
     delay(4000);
   }
@@ -277,20 +359,26 @@ bool DFRobot_SIM7000::turnON(void)
   delay(1000);
   digitalWrite(12, LOW);
   delay(10000); // 10-second wait for A7670E
-  if(checkSendCmd("AT\r\n", "OK", 100)){
+  if (checkSendCmd("AT\r\n", "OK", 100))
+  {
     return true;
-  }else{
+  }
+  else
+  {
     return false;
   }
 }
 
 bool DFRobot_SIM7000::initPos(void)
 {
-  if(checkSendCmd("AT+CGNSPWR=1\r\n","OK")){
+  if (checkSendCmd("AT+CGNSPWR=1\r\n", "OK"))
+  {
     delay(50);
     return true;
-  }else{
-     return false;
+  }
+  else
+  {
+    return false;
   }
 }
 
@@ -302,20 +390,27 @@ bool DFRobot_SIM7000::send(char *data)
   itoa(len, num, 10);
   sendCmd("AT+CIPSEND=");
   sendCmd(num);
-  if(checkSendCmd("\r\n",">")){
+  if (checkSendCmd("\r\n", ">"))
+  {
     sendCmd(data);
-    while(1){
-      while(checkReadable()){
-        readBuffer(resp,20);
-        if(NULL != strstr(resp,"OK")){
+    while (1)
+    {
+      while (checkReadable())
+      {
+        readBuffer(resp, 20);
+        if (NULL != strstr(resp, "OK"))
+        {
           return true;
         }
-        if(NULL != strstr(resp,"ERROR")){
+        if (NULL != strstr(resp, "ERROR"))
+        {
           return false;
         }
       }
     }
-  }else{
+  }
+  else
+  {
     return false;
   }
 }
@@ -326,128 +421,156 @@ bool DFRobot_SIM7000::send(char *buf, size_t len)
   itoa(len, num, 10);
   sendCmd("AT+CIPSEND=");
   sendCmd(num);
-  if(checkSendCmd("\r\n",">")){
-    if(checkSendCmd(buf,"OK")){
+  if (checkSendCmd("\r\n", ">"))
+  {
+    if (checkSendCmd(buf, "OK"))
+    {
       return true;
-    }else{
+    }
+    else
+    {
       return false;
     }
-  }else{
+  }
+  else
+  {
     return false;
   }
 }
 
-bool DFRobot_SIM7000::mqttConnect(const char* iot_client, const char* iot_username, const char* iot_key)
+bool DFRobot_SIM7000::mqttConnect(const char *iot_client, const char *iot_username, const char *iot_key)
 {
-  if(checkSendCmd("AT+CIPSEND\r\n",">")){
-    char MQTThead[10]={0x00,0x04,0x4d,0x51,0x54,0x54,0x04,(char)0xC2,0x0b,(char)0xb8};
-    char MQTTbuff[50]={0};
+  if (checkSendCmd("AT+CIPSEND\r\n", ">"))
+  {
+    char MQTThead[10] = {0x00, 0x04, 0x4d, 0x51, 0x54, 0x54, 0x04, (char)0xC2, 0x0b, (char)0xb8};
+    char MQTTbuff[50] = {0};
     MQTTbuff[0] = 0x10;
-    sendBuff(MQTTbuff,1);
+    sendBuff(MQTTbuff, 1);
     int leng = 10;
-    leng += strlen(iot_client)+2;
-    leng += strlen(iot_username)+2;
-    leng += strlen(iot_key)+2;
-    MQTTbuff[0] = leng ;
-    sendBuff(MQTTbuff,1);
-    sendBuff(MQTThead,10);
-    sendBuff(MQTThead,1);
+    leng += strlen(iot_client) + 2;
+    leng += strlen(iot_username) + 2;
+    leng += strlen(iot_key) + 2;
+    MQTTbuff[0] = leng;
+    sendBuff(MQTTbuff, 1);
+    sendBuff(MQTThead, 10);
+    sendBuff(MQTThead, 1);
     MQTTbuff[0] = strlen(iot_client);
-    sendBuff(MQTTbuff,1);
+    sendBuff(MQTTbuff, 1);
     sendCmd(iot_client);
-    sendBuff(MQTThead,1);
+    sendBuff(MQTThead, 1);
     MQTTbuff[0] = strlen(iot_username);
-    sendBuff(MQTTbuff,1);
+    sendBuff(MQTTbuff, 1);
     sendCmd(iot_username);
-    sendBuff(MQTThead,1);
+    sendBuff(MQTThead, 1);
     MQTTbuff[0] = strlen(iot_key);
-    sendBuff(MQTTbuff,1);
+    sendBuff(MQTTbuff, 1);
     sendCmd(iot_key);
-    if(checkSendCmd("","CLOSED")){
+    if (checkSendCmd("", "CLOSED"))
+    {
       return false;
-    }else{
+    }
+    else
+    {
       return true;
     }
   }
   return false;
 }
 
-bool DFRobot_SIM7000::mqttPublish(const char* iot_topic, String iot_data)
+bool DFRobot_SIM7000::mqttPublish(const char *iot_topic, String iot_data)
 {
-  if(checkSendCmd("AT+CIPSEND\r\n",">")){
+  if (checkSendCmd("AT+CIPSEND\r\n", ">"))
+  {
     DBG("aa");
-    char MQTTdata[2]={0x00,0x04};
-    char MQTTbuff[50]={0};
+    char MQTTdata[2] = {0x00, 0x04};
+    char MQTTbuff[50] = {0};
     MQTTbuff[0] = 0x32;
-    sendBuff(MQTTbuff,1);
-    MQTTbuff[0] = strlen(iot_topic)+iot_data.length()+4;
-    sendBuff(MQTTbuff,2);
+    sendBuff(MQTTbuff, 1);
+    MQTTbuff[0] = strlen(iot_topic) + iot_data.length() + 4;
+    sendBuff(MQTTbuff, 2);
     MQTTbuff[0] = strlen(iot_topic);
-    sendBuff(MQTTbuff,1);
+    sendBuff(MQTTbuff, 1);
     sendCmd(iot_topic);
-    sendBuff(MQTTdata,2);
-    iot_data.toCharArray(MQTTbuff,iot_data.length());
+    sendBuff(MQTTdata, 2);
+    iot_data.toCharArray(MQTTbuff, iot_data.length());
     sendString(iot_data.c_str());
-    if(checkSendCmd("","CLOSED")){
+    if (checkSendCmd("", "CLOSED"))
+    {
       return false;
-    }else{
+    }
+    else
+    {
       return true;
     }
-  }else{
+  }
+  else
+  {
     return false;
   }
 }
 
-bool DFRobot_SIM7000::mqttSubscribe(const char* iot_topic)
+bool DFRobot_SIM7000::mqttSubscribe(const char *iot_topic)
 {
-  if(checkSendCmd("AT+CIPSEND\r\n",">")){
-    char MQTTbuff[10]={0};
+  if (checkSendCmd("AT+CIPSEND\r\n", ">"))
+  {
+    char MQTTbuff[10] = {0};
     MQTTbuff[0] = 0x82;
-    MQTTbuff[1] = strlen(iot_topic)+5;
+    MQTTbuff[1] = strlen(iot_topic) + 5;
     MQTTbuff[3] = 0x0a;
     MQTTbuff[5] = strlen(iot_topic);
-    sendBuff(MQTTbuff,6);
+    sendBuff(MQTTbuff, 6);
     sendCmd(iot_topic);
     MQTTbuff[0] = 0x01;
-    sendBuff(MQTTbuff,1);
-    if(checkSendCmd("","CLOSED")){
+    sendBuff(MQTTbuff, 1);
+    if (checkSendCmd("", "CLOSED"))
+    {
       return false;
-    }else{
+    }
+    else
+    {
       return true;
     }
   }
   return false;
 }
 
-bool DFRobot_SIM7000::mqttUnsubscribe(const char* iot_topic)
+bool DFRobot_SIM7000::mqttUnsubscribe(const char *iot_topic)
 {
-  if(checkSendCmd("AT+CIPSEND\r\n",">")){
-    char MQTTbuff[10]={0};
+  if (checkSendCmd("AT+CIPSEND\r\n", ">"))
+  {
+    char MQTTbuff[10] = {0};
     MQTTbuff[0] = 0xa2;
-    MQTTbuff[1] = strlen(iot_topic)+4;
+    MQTTbuff[1] = strlen(iot_topic) + 4;
     MQTTbuff[3] = 0x0a;
     MQTTbuff[5] = strlen(iot_topic);
-    sendBuff(MQTTbuff,6);
+    sendBuff(MQTTbuff, 6);
     sendCmd(iot_topic);
-    if(checkSendCmd("","CLOSED",1000)){
+    if (checkSendCmd("", "CLOSED", 1000))
+    {
       return false;
-    }else{
+    }
+    else
+    {
       return true;
     }
-  }else{
+  }
+  else
+  {
     return false;
   }
 }
 
-bool DFRobot_SIM7000::mqttRecv(char* iot_topic, char* buf, int maxlen)
+bool DFRobot_SIM7000::mqttRecv(char *iot_topic, char *buf, int maxlen)
 {
-  char MQTTbuff[maxlen+30];
-  char *p; 
-  cleanBuffer(MQTTbuff,maxlen+30);
-  int i = readBuffer(MQTTbuff,maxlen+30);
-  for(int j=0;j<i;j++){
-    if(NULL != (p = strstr(MQTTbuff+j,iot_topic))){
-      memcpy(buf,p+strlen(iot_topic),maxlen+30);
+  char MQTTbuff[maxlen + 30];
+  char *p;
+  cleanBuffer(MQTTbuff, maxlen + 30);
+  int i = readBuffer(MQTTbuff, maxlen + 30);
+  for (int j = 0; j < i; j++)
+  {
+    if (NULL != (p = strstr(MQTTbuff + j, iot_topic)))
+    {
+      memcpy(buf, p + strlen(iot_topic), maxlen + 30);
       return true;
     }
   }
@@ -456,34 +579,47 @@ bool DFRobot_SIM7000::mqttRecv(char* iot_topic, char* buf, int maxlen)
 
 bool DFRobot_SIM7000::mqttDisconnect(void)
 {
-  if(checkSendCmd("AT+CIPSEND\r\n",">")){
-    const char MQTTdata[2]={(char)0xe0,0x00};
-    sendBuff(MQTTdata,2);
-    if(checkSendCmd("","CLOSED")){
+  if (checkSendCmd("AT+CIPSEND\r\n", ">"))
+  {
+    const char MQTTdata[2] = {(char)0xe0, 0x00};
+    sendBuff(MQTTdata, 2);
+    if (checkSendCmd("", "CLOSED"))
+    {
       return true;
-    }else{
+    }
+    else
+    {
       return false;
     }
-  }else{
+  }
+  else
+  {
     return false;
   }
 }
 
 bool DFRobot_SIM7000::httpInit(eNet net)
 {
-  if(net == eNB){
-    if(!checkSendCmd("AT+SAPBR=3,1,\"APN\",\"www.plusgsm.pl\"\r\n","OK")){ //by�o cntb
-      return false;
-    }
-  }else if(net == eGPRS){
-    if(!checkSendCmd("AT+SAPBR=3,1,\"APN\",\"www.plusgsm.pl\"\r\n","OK")){ //by�o cmnet
+  if (net == eNB)
+  {
+    if (!checkSendCmd("AT+SAPBR=3,1,\"APN\",\"www.plusgsm.pl\"\r\n", "OK"))
+    { // by�o cntb
       return false;
     }
   }
-  if(!checkSendCmd("AT+SAPBR=1,1\r\n","OK")){
+  else if (net == eGPRS)
+  {
+    if (!checkSendCmd("AT+SAPBR=3,1,\"APN\",\"www.plusgsm.pl\"\r\n", "OK"))
+    { // by�o cmnet
+      return false;
+    }
+  }
+  if (!checkSendCmd("AT+SAPBR=1,1\r\n", "OK"))
+  {
     return false;
   }
-  if(!checkSendCmd("AT+SAPBR=2,1\r\n","OK")){
+  if (!checkSendCmd("AT+SAPBR=2,1\r\n", "OK"))
+  {
     return false;
   }
   return true;
@@ -493,91 +629,107 @@ bool DFRobot_SIM7000::httpConnect(const char *host)
 {
   cleanBuffer(command, BUFSIZE);
   delay(200);
-  if(!mySendCmd("AT+HTTPINIT\r\n","OK")){
-    Serial.println("could not init http"); //!debug
+  if (!mySendCmd("AT+HTTPINIT\r\n", "OK"))
+  {
+    Serial.println("could not init http"); //! debug
     return false;
   }
   snprintf(command, BUFSIZE, "AT+HTTPPARA=\"URL\",\"%s\"\r\n", host);
-  // sendCmd("AT+HTTPPARA=\"URL\",\"");
-  // sendCmd(host);
-  // if(!checkSendCmd("\"\r\n","OK")){
-  if (! mySendCmd(command, "OK")) {
-    Serial.println("could not set url"); //!debug
+  if (!mySendCmd(command, "OK"))
+  {
+    Serial.println("could not set url"); //! debug
     return false;
   }
+
+  // mySendCmd("AT+HTTPPARA=\"ACCEPT\",\"application/json\"");
+
+  // mySendCmd("AT+HTTPPARA=\"CONTENT\",\"application/json\"");
+
   return true;
 }
 
-bool DFRobot_SIM7000::httpPost(const char *host , String data)
+
+bool DFRobot_SIM7000::httpPost(const char *host, String data, int readLen = -1)
 {
   int timeout = 4000;
   cleanBuffer(buffer, BUFSIZE);
   cleanBuffer(command, BUFSIZE);
-
   snprintf(command, BUFSIZE, "AT+HTTPDATA=%d,%d\r\n", data.length(), timeout);
-    
-  if(!mySendCmd(command, "DOWNLOAD")){
-    Serial.println("stuck on download");
-    return false;
-  }
-  Serial.println("getting text");
+  checkSendCmd(command, "DOWNLOAD");
   delay(500);
-  // DBG(data.c_str());
   sendString(data.c_str());
 
   delay(500);
-  
+
   int i = 0;
-  for (i = 0; i < 20; i++) {
-    readBuffer(buffer,BUFSIZE);
-    if(NULL != strstr(buffer,"OK")){
+  for (i = 0; i < 20; i++)
+  {
+    readBuffer(buffer, BUFSIZE);
+    if (NULL != strstr(buffer, "OK"))
+    {
       break;
     }
-    if(NULL != strstr(buffer,"ERROR")){
+    if (NULL != strstr(buffer, "ERROR"))
+    {
       Serial.println("could not get data");
       return false;
     }
     Serial.print(".");
     delay(50);
   }
-  if (i == 20) {
-    Serial.println("\r\n supposedly it couldnt get text");
-  }
   delay(50);
   sendCmd("AT+HTTPACTION=1\r\n");
-  while(1){
-    readBuffer(buffer,BUFSIZE);
-    if(NULL != strstr(buffer,"200")){
+  for (i = 0; i < 60; i++)
+  {
+    readBuffer(buffer, BUFSIZE);
+    if (NULL != strstr(buffer, "200"))
+    {
       break;
     }
-    if(NULL != strstr(buffer,"601")){
+    if (NULL != strstr(buffer, "601"))
+    {
       return false;
     }
   }
-  // sendCmd("AT+HTTPREAD\r\n");
-	return true;
+  if (i == 60)
+  {
+    return false;
+  }
+
+  if (readLen > 0)
+  {
+    cleanBuffer(command, BUFSIZE);
+    snprintf(command, BUFSIZE, "AT+HTTPREAD=0,%d\r\n", readLen);
+    sendCmd(command);
+  }
+
+  return true;
 }
 
 void DFRobot_SIM7000::httpGet(const char *host)
 {
   char resp[40];
-  if(!httpConnect(host)){
+  if (!httpConnect(host))
+  {
     return;
   }
   sendCmd("AT+HTTPACTION=0\r\n");
-  while(1){
-    readBuffer(resp,40);
-    if(NULL != strstr(resp,"200")){
+  while (1)
+  {
+    readBuffer(resp, 40);
+    if (NULL != strstr(resp, "200"))
+    {
       break;
     }
-    if(NULL != strstr(resp,"601")){
+    if (NULL != strstr(resp, "601"))
+    {
       Serial.println("ERROR !");
       return;
     }
   }
-  //delay(11000);
-  // if(checkSendCmd("AT+HTTPACTION=0\r\n","601")){
-  
+  // delay(11000);
+  //  if(checkSendCmd("AT+HTTPACTION=0\r\n","601")){
+
   // }
   sendCmd("AT+HTTPREAD\r\n");
   get_String();
@@ -585,16 +737,16 @@ void DFRobot_SIM7000::httpGet(const char *host)
 
 void DFRobot_SIM7000::httpDisconnect(void)
 {
-  sendCmd("AT+HTTPTERM\r\n");
+  mySendCmd("AT+HTTPTERM\r\n");
 }
 
-int DFRobot_SIM7000::recv(char* buf, int maxlen)
+int DFRobot_SIM7000::recv(char *buf, int maxlen)
 {
   char gprsBuffer[maxlen];
-  cleanBuffer(gprsBuffer,maxlen);
-  int i=readBuffer(gprsBuffer,maxlen,1000);
+  cleanBuffer(gprsBuffer, maxlen);
+  int i = readBuffer(gprsBuffer, maxlen, 1000);
   Serial.print(i);
-  memcpy(buf,gprsBuffer,i);
+  memcpy(buf, gprsBuffer, i);
   return i;
 }
 
@@ -602,51 +754,66 @@ bool DFRobot_SIM7000::getPosition(void)
 {
   char posBuffer[150];
   char *position;
-  cleanBuffer(posBuffer,150);
+  cleanBuffer(posBuffer, 150);
   sendCmd("AT+CGNSINF\r\n");
-  readBuffer(posBuffer,150);
+  readBuffer(posBuffer, 150);
   DBG(posBuffer);
-  if(NULL != strstr(posBuffer,"+CGNSINF: 1,1")){
+  if (NULL != strstr(posBuffer, "+CGNSINF: 1,1"))
+  {
     setCommandCounter(4);
-  }else{
+  }
+  else
+  {
     return false;
   }
-  if(getCommandCounter() == 4){
-    position  = strstr(posBuffer,".000");
-    memcpy(_latitude , position+5 , 7);
-    memcpy(_longitude, position+15, 7);
+  if (getCommandCounter() == 4)
+  {
+    position = strstr(posBuffer, ".000");
+    memcpy(_latitude, position + 5, 7);
+    memcpy(_longitude, position + 15, 7);
     setCommandCounter(5);
     return true;
-  }else{
+  }
+  else
+  {
     return false;
   }
 }
 
-const char* DFRobot_SIM7000::getLatitude(void)
+const char *DFRobot_SIM7000::getLatitude(void)
 {
-  if(getCommandCounter() >= 5){
+  if (getCommandCounter() >= 5)
+  {
     setCommandCounter(6);
     return _latitude;
-  }else{
+  }
+  else
+  {
     return "error";
   }
 }
 
-const char* DFRobot_SIM7000::getLongitude(void)
+const char *DFRobot_SIM7000::getLongitude(void)
 {
-  if(getCommandCounter() >= 5){
+  if (getCommandCounter() >= 5)
+  {
     setCommandCounter(6);
     return _longitude;
-  }else{
+  }
+  else
+  {
     return "error";
   }
 }
 
 bool DFRobot_SIM7000::closeNetwork(void)
 {
-  if(checkSendCmd("AT+CIPSHUT\r\n","OK",2000)){
+  if (checkSendCmd("AT+CIPSHUT\r\n", "OK", 2000))
+  {
     return true;
-  }else{
+  }
+  else
+  {
     return false;
   }
 }
@@ -655,50 +822,45 @@ int DFRobot_SIM7000::batteryPower(void)
 {
   char batteryBuff[26];
   char *pBattery;
-  int i=0,j=0,k=0;
-  cleanBuffer(batteryBuff,26);
+  int i = 0, j = 0, k = 0;
+  cleanBuffer(batteryBuff, 26);
   sendCmd("AT+CBC\r\n");
-  readBuffer(batteryBuff,26);
-  pBattery = strstr(batteryBuff,"+CBC:");
+  readBuffer(batteryBuff, 26);
+  pBattery = strstr(batteryBuff, "+CBC:");
   i = *(pBattery + 8) - 48;
   j = *(pBattery + 9) - 48;
-  k =  (i * 10) + j;
-  return  k;
+  k = (i * 10) + j;
+  return k;
 }
 
 // Additional functions
 
-bool DFRobot_SIM7000::setSSL(char *ntp_server, int time_zone_full_hours)
+bool DFRobot_SIM7000::setupSSL(char *ntp_server, int time_zone_full_hours)
 {
-  // set time
-  // mySendCmd("AT+CNTPCID=0\r\n"); // not in a7670
-
   cleanBuffer(command, BUFSIZE);
-  // int time_zone_quarters = -12;
+
+  // set time
   int time_zone_quarters = time_zone_full_hours * 4;
-  snprintf(command, BUFSIZE, "AT+CNTP=\"%s\",%d,0,0\r\n", ntp_server, time_zone_quarters);
+  snprintf(command, BUFSIZE, "AT+CNTP=\"%s\",%d\r\n", ntp_server, time_zone_quarters);
   mySendCmd(command);
-  
-  mySendCmd("AT+CNTP\r\n", "+CNTP", 20);
-  
+
+  mySendCmd("AT+CNTP\r\n", "+CNTP: 0", 20);
+
   // SSL
-  // mySendCmd("AT+CACID=0\r\n"); // not in a7670
+  mySendCmd("AT+CSSLCFG=\"sslversion\",0,4\r\n");
   
-  mySendCmd("AT+CSSLCFG=\"sslversion\",0,3\r\n");
-  
-  // mySendCmd("AT+CASSLCFG=0,\"SSL\",1\r\n");
-  
-  // mySendCmd("AT+CASSLCFG=0,\"CRINDEX\",0\r\n");
-  
-  // check SSL
-  // mySendCmd("AT+CASSLCFG?\r\n");
+  // DANGEROUS!! Disable server authentication
+  // mySendCmd("AT+CSSLCFG=\"authmode\",0,0\r\n");
+
+  mySendCmd("AT+CSSLCFG=0\r\n");
+
+  // mySendCmd("AT+CCHSTART\r\n", "+CCHSTART: 0");
 
   return true;
-
 }
 
 bool DFRobot_SIM7000::myHttpInit(char *host)
-{  
+{
   // configure http
   cleanBuffer(command, BUFSIZE);
   snprintf(command, BUFSIZE, "AT+SHCONF=\"URL\",\"%s\"\r\n", host);
@@ -719,13 +881,13 @@ bool DFRobot_SIM7000::myPostRequest(char *host, String data)
 {
   cleanBuffer(buffer, BUFSIZE);
   cleanBuffer(command, BUFSIZE);
-  
-  if (!mySendCmd("AT+SHCONN\r\n")) {
+
+  if (!mySendCmd("AT+SHCONN\r\n"))
+  {
     return false;
   }
 
-  
-  //!TODO: setting body must be fixed
+  //! TODO: setting body must be fixed
   int data_len = data.length();
   int data_timeout = 10000;
   snprintf(command, BUFSIZE, "AT+SHBOD=%d,%d\r\n", data_len, data_timeout);
@@ -749,7 +911,7 @@ bool DFRobot_SIM7000::myPostRequest(char *host, String data)
   delay(400);
   sendString(data.c_str());
   delay(500);
-  
+
   readBuffer(buffer, BUFSIZE);
   Serial.println(buffer);
   // if (strstr(buffer, "ERROR") != NULL){
@@ -760,13 +922,14 @@ bool DFRobot_SIM7000::myPostRequest(char *host, String data)
   cleanBuffer(buffer, BUFSIZE);
   sendCmd("AT+SHBOD?\r\n");
   delay(500);
-  readBuffer(buffer, BUFSIZE); //by�o 32
+  readBuffer(buffer, BUFSIZE); // by�o 32
   Serial.println(buffer);
   Serial.println("\r\n");
   delay(100);
 
   //  make request (POST)
-  if(! mySendCmd("AT+SHREQ=\"/\", 3\r\n")) {
+  if (!mySendCmd("AT+SHREQ=\"/\", 3\r\n"))
+  {
     mySendCmd("AT+SHDISC\r\n");
     return false;
   }
@@ -780,8 +943,8 @@ bool DFRobot_SIM7000::myPostRequest(char *host, String data)
   // Serial.println("\r\n");
   // delay(100);
 
-
-  if (! mySendCmd("AT+SHDISC\r\n")) {
+  if (!mySendCmd("AT+SHDISC\r\n"))
+  {
     return false;
   }
 
@@ -792,18 +955,21 @@ bool DFRobot_SIM7000::setupSMS(char *serviceCentral)
 {
   cleanBuffer(command, BUFSIZE);
   // switch character set to IRA because others do not work
-  if (!mySendCmd("AT+CSCS=\"IRA\"\r\n")) {
+  if (!mySendCmd("AT+CSCS=\"IRA\"\r\n"))
+  {
     return false;
   }
 
   // set the service central
   snprintf(command, BUFSIZE, "AT+CSCA=\"%s\"\r\n", serviceCentral);
-  if (!mySendCmd(command)) {
+  if (!mySendCmd(command))
+  {
     return false;
   }
 
   // set to TEXT mode bc PDU does not work
-  if (!mySendCmd("AT+CMGF=1\r\n")) {
+  if (!mySendCmd("AT+CMGF=1\r\n"))
+  {
     false;
   }
 
@@ -828,26 +994,30 @@ bool DFRobot_SIM7000::sendSMS(char *target, String data)
   return true;
 }
 
-bool DFRobot_SIM7000::mySendCmd(char *cmd, char* check_str = "OK", int read_count = 10, int try_count = 3, int delay_ms = BASE_DELAY)
-{  
+bool DFRobot_SIM7000::mySendCmd(char *cmd, char *check_str = "OK", int read_count = 10, int try_count = 3, int delay_ms = BASE_DELAY)
+{
 
   cleanBuffer(buffer, BUFSIZE);
   // delay(delay_ms);
-  for (int r = 0; r < try_count; r++) {
-    
+  for (int r = 0; r < try_count; r++)
+  {
+
     sendCmd(cmd);
     delay(delay_ms);
 
-    for (int i = 0; i < read_count; i++) {
+    for (int i = 0; i < read_count; i++)
+    {
       readBuffer(buffer, BUFSIZE);
       // delay(delay_ms);
-  
-      if (NULL != strstr(buffer, check_str)) {
+
+      if (NULL != strstr(buffer, check_str))
+      {
         Serial.println(buffer);
         delay(delay_ms);
         return true;
       }
-      if (NULL != strstr(buffer, "ERROR")) {
+      if (NULL != strstr(buffer, "ERROR"))
+      {
         Serial.println(buffer);
         delay(delay_ms);
         break;

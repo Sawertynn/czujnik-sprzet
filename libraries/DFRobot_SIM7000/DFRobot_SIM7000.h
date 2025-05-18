@@ -8,7 +8,7 @@
  * @version  V1.0.1
  * @date  2021-09-16
  * @url https://github.com/DFRobot/DFRobot_SIM7000
- */                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+ */
 #ifndef __DFROBOT_SIM7000_H__
 #define __DFROBOT_SIM7000_H__
 
@@ -17,38 +17,48 @@
 #include "Arduino.h"
 #include "string.h"
 
-#define ON  0
+#define ON 0
 #define OFF 1
 
 constexpr int BASE_DELAY = 100;
 
-
 #if 0
-#define DBG(...) {Serial.print("["); Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
+#define DBG(...)                 \
+  {                              \
+    Serial.print("[");           \
+    Serial.print(__FUNCTION__);  \
+    Serial.print("(): ");        \
+    Serial.print(__LINE__);      \
+    Serial.print(" ] ");         \
+    Serial.println(__VA_ARGS__); \
+  }
 #else
 #define DBG(...)
 #endif
 
-class DFRobot_SIM7000 : public DFRobot_SIMcore{
+class DFRobot_SIM7000 : public DFRobot_SIMcore
+{
 public:
   /**
    * @enum eProtocol
    * @brief Select Network communication protocol
    */
-  typedef enum  {
+  typedef enum
+  {
     eCLOSED = 0,
-    eTCP    = 1,
-    eUDP    = 2,
-  }eProtocol;
+    eTCP = 1,
+    eUDP = 2,
+  } eProtocol;
 
   /**
    * @enum eNet
    * @brief Select data communication mode
    */
-  typedef enum {
+  typedef enum
+  {
     eGPRS,
     eNB,
-  }eNet;
+  } eNet;
 
 public:
   /**
@@ -58,13 +68,13 @@ public:
    * @return None
    */
   DFRobot_SIM7000(Stream *s);
-  ~DFRobot_SIM7000(){};
+  ~DFRobot_SIM7000() {};
 
   // send command to SIM module
-  bool atSend(char* command);
+  bool atSend(char *command);
 
   // wait for needle to appear in buffer, or maximally for maxWait seconds
-  bool waitFor(char* needle, int maxWait);
+  bool waitFor(char *needle, int maxWait);
 
   bool changeBaudRate(int new_baud_rate);
 
@@ -75,8 +85,8 @@ public:
    * @param maxlen Receive data length
    * @return Get data length
    */
-  int recv(char* buf, int maxlen);
- 
+  int recv(char *buf, int maxlen);
+
   /**
    * @fn checkSignalQuality
    * @brief Check signal quality
@@ -90,7 +100,7 @@ public:
    * @return Battery power
    */
   int batteryPower(void);
- 
+
   /**
    * @fn setNetMode
    * @brief Set net mode
@@ -98,7 +108,7 @@ public:
    * @n    GPRS: GPRS mode
    * @n    NB:   NB-IOT mode
    * @return bool type, indicating the status of setting
-   * @retval ture Success 
+   * @retval ture Success
    * @retval false Failed
    */
   bool setNetMode(eNet net);
@@ -107,10 +117,10 @@ public:
    * @fn attacthService
    * @brief Open the connection
    * @return bool type, indicating the status of opening the connection
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
-  bool attacthService(char* APN);
+  bool attacthService(char *APN);
 
   /**
    * @fn setBaudRate
@@ -119,7 +129,7 @@ public:
    * @n    Possible values:1200 2400 4800 9600 19200 38400
    * @note SIM7000 default baud rate is 115200, reduce the baud rate to avoid distortion
    * @return bool type, indicating the status of setting
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
   bool setBaudRate(long rate);
@@ -128,7 +138,7 @@ public:
    * @fn checkSIMStatus
    * @brief Check SIM card
    * @return bool type, indicating the status of checking SIM card
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
   bool checkSIMStatus(void);
@@ -142,7 +152,7 @@ public:
    * @param host Host domain name
    * @param port  Contented port
    * @return bool type, indicating the status of opening Network
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
   bool openNetwork(eProtocol ptl, const char *host, int port);
@@ -151,7 +161,7 @@ public:
    * @fn closeNetwork
    * @brief End the connection
    * @return bool type, indicating the status of closing Network
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
   bool closeNetwork(void);
@@ -160,7 +170,7 @@ public:
    * @fn turnON
    * @brief Turn ON SIM7000
    * @return bool type, indicating the status of turning on
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
   bool turnON(void);
@@ -169,7 +179,7 @@ public:
    * @fn initPos
    * @brief Init SIM7000 positioning module
    * @return bool type, indicating the initialization status
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
   bool initPos(void);
@@ -181,10 +191,10 @@ public:
    * @param iot_username The user name identifies the name of the user who is connecting
    * @param iot_key The password for user
    * @return bool type, indicating the connection status
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
-  bool mqttConnect(const char* iot_client, const char* iot_username, const char* iot_key);
+  bool mqttConnect(const char *iot_client, const char *iot_username, const char *iot_key);
 
   /**
    * @fn mqttPublish
@@ -192,30 +202,30 @@ public:
    * @param iot_topic Target topic
    * @param iot_data  The data you want to send
    * @return bool type, indicating status of sending
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
-  bool mqttPublish(const char* iot_topic, String iot_data);
+  bool mqttPublish(const char *iot_topic, String iot_data);
 
   /**
    * @fn mqttSubscribe
    * @brief Subscribe MQTT channel
-   * @param iot_topic The subscribed MQTT key 
+   * @param iot_topic The subscribed MQTT key
    * @return bool type, indicating subscription status
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
-  bool mqttSubscribe(const char* iot_topic);
+  bool mqttSubscribe(const char *iot_topic);
 
   /**
    * @fn mqttUnsubscribe
    * @brief Unsubscribe MQTT channel
    * @param iot_topic The unsubscribed MQTT key
    * @return bool type, indicating unsubscribe status
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
-  bool mqttUnsubscribe(const char* iot_topic);
+  bool mqttUnsubscribe(const char *iot_topic);
 
   /**
    * @fn mqttRecv
@@ -224,16 +234,16 @@ public:
    * @param buf Send data
    * @param maxlen Send data length
    * @return bool type, indicating subscription status
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
-  bool mqttRecv(char* iot_topic, char* buf,int maxlen);
+  bool mqttRecv(char *iot_topic, char *buf, int maxlen);
 
   /**
    * @fn mqttDisconnect
    * @brief MQTT disconnection
    * @return bool type, indicating disconnection status
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
   bool mqttDisconnect(void);
@@ -245,7 +255,7 @@ public:
    * @n    eGPRS: GPRS mode
    * @n    eNB:   NB-IOT mode
    * @return bool type, indicating initialization status
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
   bool httpInit(eNet net);
@@ -255,7 +265,7 @@ public:
    * @brief Connect to server
    * @param host Server IP
    * @return bool type, indicating connection status
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
   bool httpConnect(const char *host);
@@ -265,11 +275,12 @@ public:
    * @brief HTTP POST
    * @param host URL
    * @param data POST data
+   * @param readLen size of response data to read, by default -1 (do not read response)
    * @return bool type, indicating request status
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
-  bool httpPost(const char *host , String data);
+  bool httpPost(const char *host, String data, int readLen = -1);
 
   /**
    * @fn httpGet
@@ -290,17 +301,17 @@ public:
    * @param buf The buffer for data to be send
    * @param len The length of data to be send
    * @return bool type, indicating status of sending
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
-  bool send(char *buf,size_t len);
+  bool send(char *buf, size_t len);
 
   /**
    * @fn send
    * @brief Send data
    * @param data The data to send
    * @return bool type, indicating status of sending
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
   bool send(char *data);
@@ -309,7 +320,7 @@ public:
    * @fn getPosition
    * @brief Get the current position
    * @return bool type, indicating the status of getting position
-   * @retval true Success 
+   * @retval true Success
    * @retval false Failed
    */
   bool getPosition(void);
@@ -319,61 +330,59 @@ public:
    * @brief Get latitude
    * @return Latitude value
    */
-  const char* getLatitude(void);
+  const char *getLatitude(void);
 
   /**
    * @fn getLongitude
    * @brief Get longitude
    * @return Longitude value
    */
-  const char* getLongitude(void);
+  const char *getLongitude(void);
 
-/**
- * @fn setSSL
- * @brief Configure and set up SSL
- * @param ntp_server NTP server's URL
- * @param time_zone_full_hours time zone, in full hours offset from UTC 
- * @return bool type, indicating status
- * @retval true Success 
- * @retval false Failed
- */
-bool setSSL(char *ntp_server, int time_zone);
+  /**
+   * @fn setupSSL
+   * @brief Configure and set up SSL
+   * @param ntp_server NTP server's URL
+   * @param time_zone_full_hours time zone, in full hours offset from UTC
+   * @return bool type, indicating status
+   * @retval true Success
+   * @retval false Failed
+   */
+  bool setupSSL(char *ntp_server, int time_zone);
 
-
-/**
- * @fn myHttpInit
- * @brief Initialize HTTP connection
- * @param host the URL of host
- * @return bool type, indicating status
- * @retval true Success 
- * @retval false Failed
- */
+  /**
+   * @fn myHttpInit
+   * @brief Initialize HTTP connection
+   * @param host the URL of host
+   * @return bool type, indicating status
+   * @retval true Success
+   * @retval false Failed
+   */
   bool myHttpInit(char *host);
 
-/**
- * @fn myPostRequest
- * @brief Connect to host, send POST Request and disconnect
- * @param host the URL of host
- * @param data the data to be sent
- * @return bool type, indicating status
- * @retval true Success 
- * @retval false Failed
- */
-  bool myPostRequest(char* host, String data);
+  /**
+   * @fn myPostRequest
+   * @brief Connect to host, send POST Request and disconnect
+   * @param host the URL of host
+   * @param data the data to be sent
+   * @return bool type, indicating status
+   * @retval true Success
+   * @retval false Failed
+   */
+  bool myPostRequest(char *host, String data);
 
-  bool setupSMS(char* serviceCentral);
+  bool setupSMS(char *serviceCentral);
 
-  bool sendSMS(char* target, String data);
+  bool sendSMS(char *target, String data);
 
+  bool mySendCmd(char *cmd, char *check_str = "OK", int read_count = 10, int try_count = 3, int delay_ms = BASE_DELAY);
 
-bool mySendCmd(char *cmd, char* check_str = "OK", int read_count = 10, int try_count = 3, int delay_ms = BASE_DELAY);
-  
 private:
-  char  _latitude[8];
-  char  _longitude[8];
-  int   _mode_t=0;
-	long	_baudrate = 19200;
-	Stream *_s;
- };
+  char _latitude[8];
+  char _longitude[8];
+  int _mode_t = 0;
+  long _baudrate = 19200;
+  Stream *_s;
+};
 
 #endif

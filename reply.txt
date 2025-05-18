@@ -1,0 +1,23 @@
+Najpierw jeszcze konfiguruję SSL w ten sposób:
+
+ustawiam lokalny czas:
+AT+CNTP="pool.ntp.org",4
+AT+CNTP
+
+i ustawiam opcje SSL
+AT+CSSLCFG="sslversion",0,3
+AT+CSSLCFG="authmode",0,0
+
+a tutaj polecenia http:
+AT+HTTPINIT
+AT+HTTPPARA="URL","https://172.205.129.224"
+AT+HTTPDATA=16,5000
+> przykladowe dane
+
+AT+HTTPACTION=1
+
+po tym ostatnim dostaję 1,715,0
+
+Kiedy ustawiam URL z http (bez s) to normalnie przechodzi i zwraca 1,200
+
+
