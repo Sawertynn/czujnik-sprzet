@@ -1,3 +1,27 @@
+# Instrukcja
+metody (funkcje) klasy DFRobot_SIM7000 (zmienna sim7000):
+- turnOn()
+- checkSIMStatus()
+- checkSignal()
+- attachService(APN)
+
+SMS:
+- setupSMS(SMS_CENTRAL_SERVICE)
+- sendSMS(telephone_number, datastring)
+
+SSL:
+- setupSSL(NTP_SERVER, TIME_ZONE)
+
+HTTP(S):
+- httpConnect(host)
+    - host w postaci "protokół://nazwa.domena:port", np. "https://nazwa.domena", "http://nazwa.domena:1234"
+- httpPost(host, data, {readlen})
+    - host jak wyżej
+    - readlen - opcjonalny - ile wypisać znaków odpowiedzi od serwera, domyślnie nie wypisuje odpowiedzi
+
+MQTT:
+
+
 # !TODO
 - ssl
 - mqtt

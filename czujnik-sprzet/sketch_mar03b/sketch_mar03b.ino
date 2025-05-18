@@ -19,9 +19,10 @@
 
 // #### SETMODE ####
 
-#define MODE_HTTPS
-// #define MODE_SMS
-// #define MODE_MQTT
+#define MODE_SSL  true
+#define MODE_HTTP true
+#define MODE_MQTT false
+#define MODE_SMS  false
 
 #define PIN_TX     7
 #define PIN_RX     8
@@ -32,8 +33,12 @@
 #define value     "VALUE"
 
 // #define HOST "https://httpbin.org/post"
-// #define HOST "https://srv84554.seohost.com.pl/"
-#define HOST "https://eojm9q58pn8j6g0.m.pipedream.net"
+#define HOST "https://srv84554.seohost.com.pl"
+// #define HOST "https://eo87jvr1yccmec5.m.pipedream.net"
+
+#define APN "plus"
+#define NTP_SERVER "pool.ntp.org"
+#define TIME_ZONE 2 // CEST+2:00
 
 #define MQTT_URL "1901da8e0be84355ae4f4294569f45e3.s1.eu.hivemq.cloud"
 #define MQTT_TLS_URL "1901da8e0be84355ae4f4294569f45e3.s1.eu.hivemq.cloud:8883"
@@ -43,13 +48,9 @@
 
 #define MQTT_FULL "tcp://9877acae137043d6ba8adea50ce969a9.s1.eu.hivemq.cloud:8883"
 
-#define NTP_SERVER "pool.ntp.org"
-#define TIME_ZONE 2 // CEST+2:00
 
-#define APN "plus"
-#define SMS_CENTRAL_SERVICE "+48601100601"
+#define SMS_CENTRAL_SERVICE "+48601100601" // for plus
 #define SMS_TARGET "provide_number"
-#define SMS_MODE 0
 
 SoftwareSerial     simSerial(PIN_RX,PIN_TX);
 DFRobot_SIM7000         sim7000(&simSerial);
@@ -69,10 +70,6 @@ void setup(){
 
   // switch baud raute from high to low
   sim7000.changeBaudRate(9600);
-
-  // wait for 'PB DONE' message
-  // sim7000.waitFor("DONE", 90);
-
 
   Serial.println("Check SIM card......");
   for (int i = 0; i < 3; i++) {
@@ -106,40 +103,34 @@ void setup(){
     Serial.println("Fail: Attaching service");
   }
   
-  #ifdef MODE_SMS
+  if (MODE_SMS) {
+    Serial.println("=== SMS ===");
     sim7000.setupSMS(SMS_CENTRAL_SERVICE);
 
-    String text = "sms from program";
+    String text = "sms from arduino";
     sim7000.sendSMS(SMS_TARGET, text);
-    return;
-  #endif // SMS
+  } // SMS
 
-  Serial.println("=== SET SSL ===");
-  if (sim7000.setupSSL(NTP_SERVER, TIME_ZONE))
-  {
-    Serial.println("Success: set SSL");
-  }
-  else 
-  {
-    Serial.println("Fail: set SSL");
-  }
+  if (MODE_SSL) {
+    Serial.println("=== SET SSL ===");
+    if (sim7000.setupSSL(NTP_SERVER, TIME_ZONE))
+    {
+      Serial.println("Success: set SSL");
+    }
+    else 
+    {
+      Serial.println("Fail: set SSL");
+    }
+  } // SSL
 
-  #ifdef MODE_MQTT
+  if (MODE_MQTT)
+  {
     Serial.println("=== MQTT ===");
-    return;
-    Serial.println("=== MQTT dfrobot===");
-    sim7000.mqttConnect(
-      "client1",
-      MQTT_LOGIN,
-      MQTT_PASS
-    );
-    sim7000.mqttPublish(
-      "test",
-      "czujnik"
-    );
-  #endif // MQTT
+   
+  }
 
-  #ifdef MODE_HTTPS
+  if (MODE_HTTP)
+  {
     Serial.println("=== http connect ====");
     if (sim7000.httpConnect(HOST)) {
       Serial.println("Connected to host");
@@ -154,32 +145,30 @@ void setup(){
     
     // String postData = "{"name": "czujnik", "message":"wiadomosc"}";
     String postData = "{\"name\": \"czujnik\", \"message\":\"wiadomosc\"}";
-    // if (sim7000.httpPost(HOST, postData)) {
     if (sim7000.httpPost(HOST, postData, 1000)) {
       Serial.println("message sent!");
     }
     else
     {
       Serial.println("failed to send");
-      return;
     }
-    // uncomment for final version
-    // sim7000.httpDisconnect();
+    sim7000.httpDisconnect();
+
+  } // HTTPS
 
 
-  #endif // HTTPS
   Serial.println(">> Interactive mode <<");
 }
 
 void loop() {
   if (Serial.available()) {
-      String command = Serial.readStringUntil('\n'); // Odczytaj do nowej linii
-      simSerial.println(command); // Wyślij do SIM7070G
+      String command = Serial.readStringUntil('\n');
+      simSerial.println(command);
   }
 
   if (simSerial.available()) {
     while (simSerial.available()) {
-        Serial.write(simSerial.read()); // Przekazuj dane znak po znaku
+        Serial.write(simSerial.read());
     }
   }
 }

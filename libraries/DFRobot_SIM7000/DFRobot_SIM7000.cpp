@@ -438,164 +438,218 @@ bool DFRobot_SIM7000::send(char *buf, size_t len)
   }
 }
 
-bool DFRobot_SIM7000::mqttConnect(const char *iot_client, const char *iot_username, const char *iot_key)
-{
-  if (checkSendCmd("AT+CIPSEND\r\n", ">"))
-  {
-    char MQTThead[10] = {0x00, 0x04, 0x4d, 0x51, 0x54, 0x54, 0x04, (char)0xC2, 0x0b, (char)0xb8};
-    char MQTTbuff[50] = {0};
-    MQTTbuff[0] = 0x10;
-    sendBuff(MQTTbuff, 1);
-    int leng = 10;
-    leng += strlen(iot_client) + 2;
-    leng += strlen(iot_username) + 2;
-    leng += strlen(iot_key) + 2;
-    MQTTbuff[0] = leng;
-    sendBuff(MQTTbuff, 1);
-    sendBuff(MQTThead, 10);
-    sendBuff(MQTThead, 1);
-    MQTTbuff[0] = strlen(iot_client);
-    sendBuff(MQTTbuff, 1);
-    sendCmd(iot_client);
-    sendBuff(MQTThead, 1);
-    MQTTbuff[0] = strlen(iot_username);
-    sendBuff(MQTTbuff, 1);
-    sendCmd(iot_username);
-    sendBuff(MQTThead, 1);
-    MQTTbuff[0] = strlen(iot_key);
-    sendBuff(MQTTbuff, 1);
-    sendCmd(iot_key);
-    if (checkSendCmd("", "CLOSED"))
-    {
-      return false;
-    }
-    else
-    {
-      return true;
-    }
-  }
-  return false;
-}
+// bool DFRobot_SIM7000::mqttConnect(const char *iot_client, const char *iot_username, const char *iot_key)
+// {
+//   if (checkSendCmd("AT+CIPSEND\r\n", ">"))
+//   {
+//     char MQTThead[10] = {0x00, 0x04, 0x4d, 0x51, 0x54, 0x54, 0x04, (char)0xC2, 0x0b, (char)0xb8};
+//     char MQTTbuff[50] = {0};
+//     MQTTbuff[0] = 0x10;
+//     sendBuff(MQTTbuff, 1);
+//     int leng = 10;
+//     leng += strlen(iot_client) + 2;
+//     leng += strlen(iot_username) + 2;
+//     leng += strlen(iot_key) + 2;
+//     MQTTbuff[0] = leng;
+//     sendBuff(MQTTbuff, 1);
+//     sendBuff(MQTThead, 10);
+//     sendBuff(MQTThead, 1);
+//     MQTTbuff[0] = strlen(iot_client);
+//     sendBuff(MQTTbuff, 1);
+//     sendCmd(iot_client);
+//     sendBuff(MQTThead, 1);
+//     MQTTbuff[0] = strlen(iot_username);
+//     sendBuff(MQTTbuff, 1);
+//     sendCmd(iot_username);
+//     sendBuff(MQTThead, 1);
+//     MQTTbuff[0] = strlen(iot_key);
+//     sendBuff(MQTTbuff, 1);
+//     sendCmd(iot_key);
+//     if (checkSendCmd("", "CLOSED"))
+//     {
+//       return false;
+//     }
+//     else
+//     {
+//       return true;
+//     }
+//   }
+//   return false;
+// }
 
-bool DFRobot_SIM7000::mqttPublish(const char *iot_topic, String iot_data)
+// bool DFRobot_SIM7000::mqttPublish(const char *iot_topic, String iot_data)
+// {
+//   if (checkSendCmd("AT+CIPSEND\r\n", ">"))
+//   {
+//     DBG("aa");
+//     char MQTTdata[2] = {0x00, 0x04};
+//     char MQTTbuff[50] = {0};
+//     MQTTbuff[0] = 0x32;
+//     sendBuff(MQTTbuff, 1);
+//     MQTTbuff[0] = strlen(iot_topic) + iot_data.length() + 4;
+//     sendBuff(MQTTbuff, 2);
+//     MQTTbuff[0] = strlen(iot_topic);
+//     sendBuff(MQTTbuff, 1);
+//     sendCmd(iot_topic);
+//     sendBuff(MQTTdata, 2);
+//     iot_data.toCharArray(MQTTbuff, iot_data.length());
+//     sendString(iot_data.c_str());
+//     if (checkSendCmd("", "CLOSED"))
+//     {
+//       return false;
+//     }
+//     else
+//     {
+//       return true;
+//     }
+//   }
+//   else
+//   {
+//     return false;
+//   }
+// }
+
+// bool DFRobot_SIM7000::mqttSubscribe(const char *iot_topic)
+// {
+//   if (checkSendCmd("AT+CIPSEND\r\n", ">"))
+//   {
+//     char MQTTbuff[10] = {0};
+//     MQTTbuff[0] = 0x82;
+//     MQTTbuff[1] = strlen(iot_topic) + 5;
+//     MQTTbuff[3] = 0x0a;
+//     MQTTbuff[5] = strlen(iot_topic);
+//     sendBuff(MQTTbuff, 6);
+//     sendCmd(iot_topic);
+//     MQTTbuff[0] = 0x01;
+//     sendBuff(MQTTbuff, 1);
+//     if (checkSendCmd("", "CLOSED"))
+//     {
+//       return false;
+//     }
+//     else
+//     {
+//       return true;
+//     }
+//   }
+//   return false;
+// }
+
+// bool DFRobot_SIM7000::mqttUnsubscribe(const char *iot_topic)
+// {
+//   if (checkSendCmd("AT+CIPSEND\r\n", ">"))
+//   {
+//     char MQTTbuff[10] = {0};
+//     MQTTbuff[0] = 0xa2;
+//     MQTTbuff[1] = strlen(iot_topic) + 4;
+//     MQTTbuff[3] = 0x0a;
+//     MQTTbuff[5] = strlen(iot_topic);
+//     sendBuff(MQTTbuff, 6);
+//     sendCmd(iot_topic);
+//     if (checkSendCmd("", "CLOSED", 1000))
+//     {
+//       return false;
+//     }
+//     else
+//     {
+//       return true;
+//     }
+//   }
+//   else
+//   {
+//     return false;
+//   }
+// }
+
+// bool DFRobot_SIM7000::mqttRecv(char *iot_topic, char *buf, int maxlen)
+// {
+//   char MQTTbuff[maxlen + 30];
+//   char *p;
+//   cleanBuffer(MQTTbuff, maxlen + 30);
+//   int i = readBuffer(MQTTbuff, maxlen + 30);
+//   for (int j = 0; j < i; j++)
+//   {
+//     if (NULL != (p = strstr(MQTTbuff + j, iot_topic)))
+//     {
+//       memcpy(buf, p + strlen(iot_topic), maxlen + 30);
+//       return true;
+//     }
+//   }
+//   return false;
+// }
+
+// bool DFRobot_SIM7000::mqttDisconnect(void)
+// {
+//   if (checkSendCmd("AT+CIPSEND\r\n", ">"))
+//   {
+//     const char MQTTdata[2] = {(char)0xe0, 0x00};
+//     sendBuff(MQTTdata, 2);
+//     if (checkSendCmd("", "CLOSED"))
+//     {
+//       return true;
+//     }
+//     else
+//     {
+//       return false;
+//     }
+//   }
+//   else
+//   {
+//     return false;
+//   }
+// }
+
+bool mqttInit(String client_id, bool use_ssl = false)
 {
-  if (checkSendCmd("AT+CIPSEND\r\n", ">"))
-  {
-    DBG("aa");
-    char MQTTdata[2] = {0x00, 0x04};
-    char MQTTbuff[50] = {0};
-    MQTTbuff[0] = 0x32;
-    sendBuff(MQTTbuff, 1);
-    MQTTbuff[0] = strlen(iot_topic) + iot_data.length() + 4;
-    sendBuff(MQTTbuff, 2);
-    MQTTbuff[0] = strlen(iot_topic);
-    sendBuff(MQTTbuff, 1);
-    sendCmd(iot_topic);
-    sendBuff(MQTTdata, 2);
-    iot_data.toCharArray(MQTTbuff, iot_data.length());
-    sendString(iot_data.c_str());
-    if (checkSendCmd("", "CLOSED"))
-    {
-      return false;
-    }
-    else
-    {
-      return true;
-    }
-  }
-  else
-  {
+  if (!mySendCmd("AT+CMQTTSTART\r\n")) {
     return false;
   }
-}
 
-bool DFRobot_SIM7000::mqttSubscribe(const char *iot_topic)
-{
-  if (checkSendCmd("AT+CIPSEND\r\n", ">"))
-  {
-    char MQTTbuff[10] = {0};
-    MQTTbuff[0] = 0x82;
-    MQTTbuff[1] = strlen(iot_topic) + 5;
-    MQTTbuff[3] = 0x0a;
-    MQTTbuff[5] = strlen(iot_topic);
-    sendBuff(MQTTbuff, 6);
-    sendCmd(iot_topic);
-    MQTTbuff[0] = 0x01;
-    sendBuff(MQTTbuff, 1);
-    if (checkSendCmd("", "CLOSED"))
-    {
+  cleanBuffer(command, BUFSIZE);
+
+  if (!use_ssl) {
+    snprintf(command, BUFSIZE, "AT+CMQTTACCQ=0,\"%s\"\r\n", client_id.c_str());
+    if (!mySendCmd(command)) {
       return false;
     }
-    else
-    {
-      return true;
-    }
+    return true;
   }
-  return false;
-}
 
-bool DFRobot_SIM7000::mqttUnsubscribe(const char *iot_topic)
-{
-  if (checkSendCmd("AT+CIPSEND\r\n", ">"))
-  {
-    char MQTTbuff[10] = {0};
-    MQTTbuff[0] = 0xa2;
-    MQTTbuff[1] = strlen(iot_topic) + 4;
-    MQTTbuff[3] = 0x0a;
-    MQTTbuff[5] = strlen(iot_topic);
-    sendBuff(MQTTbuff, 6);
-    sendCmd(iot_topic);
-    if (checkSendCmd("", "CLOSED", 1000))
-    {
-      return false;
-    }
-    else
-    {
-      return true;
-    }
-  }
-  else
-  {
+  // use ssl
+  snprintf(command, BUFSIZE, "AT+CMQTTACCQ=0,\"%s\", 1\r\n", client_id.c_str());
+  if (!mySendCmd(command)) {
     return false;
   }
-}
-
-bool DFRobot_SIM7000::mqttRecv(char *iot_topic, char *buf, int maxlen)
-{
-  char MQTTbuff[maxlen + 30];
-  char *p;
-  cleanBuffer(MQTTbuff, maxlen + 30);
-  int i = readBuffer(MQTTbuff, maxlen + 30);
-  for (int j = 0; j < i; j++)
-  {
-    if (NULL != (p = strstr(MQTTbuff + j, iot_topic)))
-    {
-      memcpy(buf, p + strlen(iot_topic), maxlen + 30);
-      return true;
-    }
-  }
-  return false;
-}
-
-bool DFRobot_SIM7000::mqttDisconnect(void)
-{
-  if (checkSendCmd("AT+CIPSEND\r\n", ">"))
-  {
-    const char MQTTdata[2] = {(char)0xe0, 0x00};
-    sendBuff(MQTTdata, 2);
-    if (checkSendCmd("", "CLOSED"))
-    {
-      return true;
-    }
-    else
-    {
-      return false;
-    }
-  }
-  else
-  {
+  
+  if (!mySendCmd("AT+CMQTTSSLCFG=0,0\r\n")) {
     return false;
   }
+  return true;
+}
+
+bool mqttConnect(String broker_addr, String login = "", String password = "")
+{
+  cleanBuffer(command, BUFSIZE);
+  if (password == "") {
+    snprintf("AT+CMQTTCONNECT=0,\"%s\",60,1\r\n", broker_addr.c_str());
+  }
+  else {
+    snprintf("AT+CMQTTCONNECT=0,\"%s\",60,1,\"%s\",\"%s\"\r\n", broker_addr.c_str(), login.c_str(), password.c_str());
+  }
+
+  if(!mySendCmd(command)) {
+    return false;
+  }
+  return true;
+}
+
+bool mqttPublish(String topic, String payload)
+{
+  return true;
+}
+
+bool mqttDisconnect()
+{
+  
 }
 
 bool DFRobot_SIM7000::httpInit(eNet net)
@@ -640,10 +694,6 @@ bool DFRobot_SIM7000::httpConnect(const char *host)
     Serial.println("could not set url"); //! debug
     return false;
   }
-
-  // mySendCmd("AT+HTTPPARA=\"ACCEPT\",\"application/json\"");
-
-  // mySendCmd("AT+HTTPPARA=\"CONTENT\",\"application/json\"");
 
   return true;
 }
@@ -854,100 +904,6 @@ bool DFRobot_SIM7000::setupSSL(char *ntp_server, int time_zone_full_hours)
 
   mySendCmd("AT+CSSLCFG=0\r\n");
 
-  // mySendCmd("AT+CCHSTART\r\n", "+CCHSTART: 0");
-
-  return true;
-}
-
-bool DFRobot_SIM7000::myHttpInit(char *host)
-{
-  // configure http
-  cleanBuffer(command, BUFSIZE);
-  snprintf(command, BUFSIZE, "AT+SHCONF=\"URL\",\"%s\"\r\n", host);
-  sendCmd(command);
-
-  delay(100);
-  mySendCmd("AT+SHCONF=\"BODYLEN\", 128\r\n");
-  delay(100);
-  mySendCmd("AT+SHCONF=\"HEADERLEN\", 128\r\n");
-
-  // check http conf
-  // mySendCmd("AT+SHCONF?\r\n, 50, 1", 1);
-
-  return true;
-}
-
-bool DFRobot_SIM7000::myPostRequest(char *host, String data)
-{
-  cleanBuffer(buffer, BUFSIZE);
-  cleanBuffer(command, BUFSIZE);
-
-  if (!mySendCmd("AT+SHCONN\r\n"))
-  {
-    return false;
-  }
-
-  //! TODO: setting body must be fixed
-  int data_len = data.length();
-  int data_timeout = 10000;
-  snprintf(command, BUFSIZE, "AT+SHBOD=%d,%d\r\n", data_len, data_timeout);
-
-  delay(200);
-  sendCmd(command);
-  delay(50);
-
-  // wait for input prompt
-  // for (int i = 0; i < 20; i++) {
-  //   readBuffer(buffer, BUFSIZE);
-  //   delay(50);
-  //   if (strstr(buffer, ">") != NULL) {
-  //     break;
-  //   }
-  //   if (strstr(buffer, "ERROR") != NULL) {
-  //     return false;
-  //   }
-  // }
-
-  delay(400);
-  sendString(data.c_str());
-  delay(500);
-
-  readBuffer(buffer, BUFSIZE);
-  Serial.println(buffer);
-  // if (strstr(buffer, "ERROR") != NULL){
-  //   return false;
-  // }
-
-  // check request body
-  cleanBuffer(buffer, BUFSIZE);
-  sendCmd("AT+SHBOD?\r\n");
-  delay(500);
-  readBuffer(buffer, BUFSIZE); // by�o 32
-  Serial.println(buffer);
-  Serial.println("\r\n");
-  delay(100);
-
-  //  make request (POST)
-  if (!mySendCmd("AT+SHREQ=\"/\", 3\r\n"))
-  {
-    mySendCmd("AT+SHDISC\r\n");
-    return false;
-  }
-
-  // read response --> doesn't work for some reason
-  // cleanBuffer(buffer, BUFSIZE);
-  // sendCmd("AT+SHREAD=0,100\r\n"); // the 100 should be something variable
-  // delay(BASE_DELAY);
-  // readBuffer(buffer, BUFSIZE);
-  // Serial.println(buffer);
-  // Serial.println("\r\n");
-  // delay(100);
-
-  if (!mySendCmd("AT+SHDISC\r\n"))
-  {
-    return false;
-  }
-
   return true;
 }
 
@@ -998,7 +954,6 @@ bool DFRobot_SIM7000::mySendCmd(char *cmd, char *check_str = "OK", int read_coun
 {
 
   cleanBuffer(buffer, BUFSIZE);
-  // delay(delay_ms);
   for (int r = 0; r < try_count; r++)
   {
 
@@ -1008,7 +963,6 @@ bool DFRobot_SIM7000::mySendCmd(char *cmd, char *check_str = "OK", int read_coun
     for (int i = 0; i < read_count; i++)
     {
       readBuffer(buffer, BUFSIZE);
-      // delay(delay_ms);
 
       if (NULL != strstr(buffer, check_str))
       {

@@ -184,69 +184,77 @@ public:
    */
   bool initPos(void);
 
-  /**
-   * @fn mqttConnect
-   * @brief MQTT connect request
-   * @param iot_client Client name user-defined
-   * @param iot_username The user name identifies the name of the user who is connecting
-   * @param iot_key The password for user
-   * @return bool type, indicating the connection status
-   * @retval true Success
-   * @retval false Failed
-   */
-  bool mqttConnect(const char *iot_client, const char *iot_username, const char *iot_key);
+  // /**
+  //  * @fn mqttConnect
+  //  * @brief MQTT connect request
+  //  * @param iot_client Client name user-defined
+  //  * @param iot_username The user name identifies the name of the user who is connecting
+  //  * @param iot_key The password for user
+  //  * @return bool type, indicating the connection status
+  //  * @retval true Success
+  //  * @retval false Failed
+  //  */
+  // bool mqttConnect(const char *iot_client, const char *iot_username, const char *iot_key);
 
-  /**
-   * @fn mqttPublish
-   * @brief MQTT send command
-   * @param iot_topic Target topic
-   * @param iot_data  The data you want to send
-   * @return bool type, indicating status of sending
-   * @retval true Success
-   * @retval false Failed
-   */
-  bool mqttPublish(const char *iot_topic, String iot_data);
+  // /**
+  //  * @fn mqttPublish
+  //  * @brief MQTT send command
+  //  * @param iot_topic Target topic
+  //  * @param iot_data  The data you want to send
+  //  * @return bool type, indicating status of sending
+  //  * @retval true Success
+  //  * @retval false Failed
+  //  */
+  // bool mqttPublish(const char *iot_topic, String iot_data);
 
-  /**
-   * @fn mqttSubscribe
-   * @brief Subscribe MQTT channel
-   * @param iot_topic The subscribed MQTT key
-   * @return bool type, indicating subscription status
-   * @retval true Success
-   * @retval false Failed
-   */
-  bool mqttSubscribe(const char *iot_topic);
+  // /**
+  //  * @fn mqttSubscribe
+  //  * @brief Subscribe MQTT channel
+  //  * @param iot_topic The subscribed MQTT key
+  //  * @return bool type, indicating subscription status
+  //  * @retval true Success
+  //  * @retval false Failed
+  //  */
+  // bool mqttSubscribe(const char *iot_topic);
 
-  /**
-   * @fn mqttUnsubscribe
-   * @brief Unsubscribe MQTT channel
-   * @param iot_topic The unsubscribed MQTT key
-   * @return bool type, indicating unsubscribe status
-   * @retval true Success
-   * @retval false Failed
-   */
-  bool mqttUnsubscribe(const char *iot_topic);
+  // /**
+  //  * @fn mqttUnsubscribe
+  //  * @brief Unsubscribe MQTT channel
+  //  * @param iot_topic The unsubscribed MQTT key
+  //  * @return bool type, indicating unsubscribe status
+  //  * @retval true Success
+  //  * @retval false Failed
+  //  */
+  // bool mqttUnsubscribe(const char *iot_topic);
 
-  /**
-   * @fn mqttRecv
-   * @brief MQTT send data
-   * @param iot_topic Subscribe channel key
-   * @param buf Send data
-   * @param maxlen Send data length
-   * @return bool type, indicating subscription status
-   * @retval true Success
-   * @retval false Failed
-   */
-  bool mqttRecv(char *iot_topic, char *buf, int maxlen);
+  // /**
+  //  * @fn mqttRecv
+  //  * @brief MQTT send data
+  //  * @param iot_topic Subscribe channel key
+  //  * @param buf Send data
+  //  * @param maxlen Send data length
+  //  * @return bool type, indicating subscription status
+  //  * @retval true Success
+  //  * @retval false Failed
+  //  */
+  // bool mqttRecv(char *iot_topic, char *buf, int maxlen);
 
-  /**
-   * @fn mqttDisconnect
-   * @brief MQTT disconnection
-   * @return bool type, indicating disconnection status
-   * @retval true Success
-   * @retval false Failed
-   */
-  bool mqttDisconnect(void);
+  // /**
+  //  * @fn mqttDisconnect
+  //  * @brief MQTT disconnection
+  //  * @return bool type, indicating disconnection status
+  //  * @retval true Success
+  //  * @retval false Failed
+  //  */
+  // bool mqttDisconnect(void);
+
+  bool mqttInit(String client_id, bool use_ssl);
+
+  bool mqttConnect(String broker_addr, String login, String password);
+
+  bool mqttPublish(String topic, String payload);
+
+  bool mqttDisconnect();
 
   /**
    * @fn httpInit
@@ -350,27 +358,6 @@ public:
    */
   bool setupSSL(char *ntp_server, int time_zone);
 
-  /**
-   * @fn myHttpInit
-   * @brief Initialize HTTP connection
-   * @param host the URL of host
-   * @return bool type, indicating status
-   * @retval true Success
-   * @retval false Failed
-   */
-  bool myHttpInit(char *host);
-
-  /**
-   * @fn myPostRequest
-   * @brief Connect to host, send POST Request and disconnect
-   * @param host the URL of host
-   * @param data the data to be sent
-   * @return bool type, indicating status
-   * @retval true Success
-   * @retval false Failed
-   */
-  bool myPostRequest(char *host, String data);
-
   bool setupSMS(char *serviceCentral);
 
   bool sendSMS(char *target, String data);
@@ -382,6 +369,7 @@ private:
   char _longitude[8];
   int _mode_t = 0;
   long _baudrate = 19200;
+  int _mqtt_ssl = 0;
   Stream *_s;
 };
 
