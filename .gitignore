@@ -7,3 +7,6 @@ TinyGSM/
 
 # Extra programming stuff
 .vscode
+
+# Secrets
+secrets.txt
