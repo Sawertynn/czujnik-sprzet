@@ -20,8 +20,8 @@
 // #### SETMODE ####
 
 #define MODE_SSL  1
-#define MODE_HTTP 0
-#define MODE_MQTT 1
+#define MODE_HTTP 1
+#define MODE_MQTT 0
 #define MODE_SMS  0
 
 #define PIN_TX     7
@@ -132,7 +132,6 @@ void setup(){
       return false;
     }
 
-    // if (!sim7000.mqttConnect(BROKER_BASIC)) {
     if (!sim7000.mqttConnect(MQTT_TLS_URL, MQTT_LOGIN, MQTT_PASS)) {
       return false;
     }    
